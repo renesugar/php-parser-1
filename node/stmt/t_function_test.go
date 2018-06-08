@@ -17,7 +17,7 @@ import (
 func TestSimpleFunction(t *testing.T) {
 	src := `<? function foo() {}`
 
-	expected := &stmt.StmtList{
+	expected := &node.Root{
 		Stmts: []node.Node{
 			&stmt.Function{
 				ReturnsRef:    false,
@@ -28,17 +28,21 @@ func TestSimpleFunction(t *testing.T) {
 		},
 	}
 
-	actual, _, _ := php7.Parse(bytes.NewBufferString(src), "test.php")
+	php7parser := php7.NewParser(bytes.NewBufferString(src), "test.php")
+	php7parser.Parse()
+	actual := php7parser.GetRootNode()
 	assertEqual(t, expected, actual)
 
-	actual, _, _ = php5.Parse(bytes.NewBufferString(src), "test.php")
+	php5parser := php5.NewParser(bytes.NewBufferString(src), "test.php")
+	php5parser.Parse()
+	actual = php5parser.GetRootNode()
 	assertEqual(t, expected, actual)
 }
 
 func TestFunctionReturn(t *testing.T) {
 	src := `<? function foo() {return;}`
 
-	expected := &stmt.StmtList{
+	expected := &node.Root{
 		Stmts: []node.Node{
 			&stmt.Function{
 				ReturnsRef:    false,
@@ -51,17 +55,21 @@ func TestFunctionReturn(t *testing.T) {
 		},
 	}
 
-	actual, _, _ := php7.Parse(bytes.NewBufferString(src), "test.php")
+	php7parser := php7.NewParser(bytes.NewBufferString(src), "test.php")
+	php7parser.Parse()
+	actual := php7parser.GetRootNode()
 	assertEqual(t, expected, actual)
 
-	actual, _, _ = php5.Parse(bytes.NewBufferString(src), "test.php")
+	php5parser := php5.NewParser(bytes.NewBufferString(src), "test.php")
+	php5parser.Parse()
+	actual = php5parser.GetRootNode()
 	assertEqual(t, expected, actual)
 }
 
 func TestFunctionReturnVar(t *testing.T) {
 	src := `<? function foo(array $a, callable $b) {return $a;}`
 
-	expected := &stmt.StmtList{
+	expected := &node.Root{
 		Stmts: []node.Node{
 			&stmt.Function{
 				ReturnsRef:    false,
@@ -72,35 +80,39 @@ func TestFunctionReturnVar(t *testing.T) {
 						ByRef:        false,
 						Variadic:     false,
 						VariableType: &node.Identifier{Value: "array"},
-						Variable:     &expr.Variable{VarName: &node.Identifier{Value: "$a"}},
+						Variable:     &expr.Variable{VarName: &node.Identifier{Value: "a"}},
 					},
 					&node.Parameter{
 						ByRef:        false,
 						Variadic:     false,
 						VariableType: &node.Identifier{Value: "callable"},
-						Variable:     &expr.Variable{VarName: &node.Identifier{Value: "$b"}},
+						Variable:     &expr.Variable{VarName: &node.Identifier{Value: "b"}},
 					},
 				},
 				Stmts: []node.Node{
 					&stmt.Return{
-						Expr: &expr.Variable{VarName: &node.Identifier{Value: "$a"}},
+						Expr: &expr.Variable{VarName: &node.Identifier{Value: "a"}},
 					},
 				},
 			},
 		},
 	}
 
-	actual, _, _ := php7.Parse(bytes.NewBufferString(src), "test.php")
+	php7parser := php7.NewParser(bytes.NewBufferString(src), "test.php")
+	php7parser.Parse()
+	actual := php7parser.GetRootNode()
 	assertEqual(t, expected, actual)
 
-	actual, _, _ = php5.Parse(bytes.NewBufferString(src), "test.php")
+	php5parser := php5.NewParser(bytes.NewBufferString(src), "test.php")
+	php5parser.Parse()
+	actual = php5parser.GetRootNode()
 	assertEqual(t, expected, actual)
 }
 
 func TestRefFunction(t *testing.T) {
 	src := `<? function &foo() {return 1;}`
 
-	expected := &stmt.StmtList{
+	expected := &node.Root{
 		Stmts: []node.Node{
 			&stmt.Function{
 				ReturnsRef:    true,
@@ -115,17 +127,21 @@ func TestRefFunction(t *testing.T) {
 		},
 	}
 
-	actual, _, _ := php7.Parse(bytes.NewBufferString(src), "test.php")
+	php7parser := php7.NewParser(bytes.NewBufferString(src), "test.php")
+	php7parser.Parse()
+	actual := php7parser.GetRootNode()
 	assertEqual(t, expected, actual)
 
-	actual, _, _ = php5.Parse(bytes.NewBufferString(src), "test.php")
+	php5parser := php5.NewParser(bytes.NewBufferString(src), "test.php")
+	php5parser.Parse()
+	actual = php5parser.GetRootNode()
 	assertEqual(t, expected, actual)
 }
 
 func TestReturnTypeFunction(t *testing.T) {
 	src := `<? function &foo(): void {}`
 
-	expected := &stmt.StmtList{
+	expected := &node.Root{
 		Stmts: []node.Node{
 			&stmt.Function{
 				ReturnsRef:    true,
@@ -141,6 +157,8 @@ func TestReturnTypeFunction(t *testing.T) {
 		},
 	}
 
-	actual, _, _ := php7.Parse(bytes.NewBufferString(src), "test.php")
+	php7parser := php7.NewParser(bytes.NewBufferString(src), "test.php")
+	php7parser.Parse()
+	actual := php7parser.GetRootNode()
 	assertEqual(t, expected, actual)
 }

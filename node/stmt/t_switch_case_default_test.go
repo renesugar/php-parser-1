@@ -21,31 +21,37 @@ func TestAltSwitch(t *testing.T) {
 		endswitch;
 	`
 
-	expected := &stmt.StmtList{
+	expected := &node.Root{
 		Stmts: []node.Node{
 			&stmt.AltSwitch{
 				Cond: &scalar.Lnumber{Value: "1"},
-				Cases: []node.Node{
-					&stmt.Case{
-						Cond:  &scalar.Lnumber{Value: "1"},
-						Stmts: []node.Node{},
-					},
-					&stmt.Default{
-						Stmts: []node.Node{},
-					},
-					&stmt.Case{
-						Cond:  &scalar.Lnumber{Value: "2"},
-						Stmts: []node.Node{},
+				CaseList: &stmt.CaseList{
+					Cases: []node.Node{
+						&stmt.Case{
+							Cond:  &scalar.Lnumber{Value: "1"},
+							Stmts: []node.Node{},
+						},
+						&stmt.Default{
+							Stmts: []node.Node{},
+						},
+						&stmt.Case{
+							Cond:  &scalar.Lnumber{Value: "2"},
+							Stmts: []node.Node{},
+						},
 					},
 				},
 			},
 		},
 	}
 
-	actual, _, _ := php7.Parse(bytes.NewBufferString(src), "test.php")
+	php7parser := php7.NewParser(bytes.NewBufferString(src), "test.php")
+	php7parser.Parse()
+	actual := php7parser.GetRootNode()
 	assertEqual(t, expected, actual)
 
-	actual, _, _ = php5.Parse(bytes.NewBufferString(src), "test.php")
+	php5parser := php5.NewParser(bytes.NewBufferString(src), "test.php")
+	php5parser.Parse()
+	actual = php5parser.GetRootNode()
 	assertEqual(t, expected, actual)
 }
 
@@ -57,28 +63,34 @@ func TestAltSwitchSemicolon(t *testing.T) {
 		endswitch;
 	`
 
-	expected := &stmt.StmtList{
+	expected := &node.Root{
 		Stmts: []node.Node{
 			&stmt.AltSwitch{
 				Cond: &scalar.Lnumber{Value: "1"},
-				Cases: []node.Node{
-					&stmt.Case{
-						Cond:  &scalar.Lnumber{Value: "1"},
-						Stmts: []node.Node{},
-					},
-					&stmt.Case{
-						Cond:  &scalar.Lnumber{Value: "2"},
-						Stmts: []node.Node{},
+				CaseList: &stmt.CaseList{
+					Cases: []node.Node{
+						&stmt.Case{
+							Cond:  &scalar.Lnumber{Value: "1"},
+							Stmts: []node.Node{},
+						},
+						&stmt.Case{
+							Cond:  &scalar.Lnumber{Value: "2"},
+							Stmts: []node.Node{},
+						},
 					},
 				},
 			},
 		},
 	}
 
-	actual, _, _ := php7.Parse(bytes.NewBufferString(src), "test.php")
+	php7parser := php7.NewParser(bytes.NewBufferString(src), "test.php")
+	php7parser.Parse()
+	actual := php7parser.GetRootNode()
 	assertEqual(t, expected, actual)
 
-	actual, _, _ = php5.Parse(bytes.NewBufferString(src), "test.php")
+	php5parser := php5.NewParser(bytes.NewBufferString(src), "test.php")
+	php5parser.Parse()
+	actual = php5parser.GetRootNode()
 	assertEqual(t, expected, actual)
 }
 
@@ -90,21 +102,23 @@ func TestSwitch(t *testing.T) {
 		}
 	`
 
-	expected := &stmt.StmtList{
+	expected := &node.Root{
 		Stmts: []node.Node{
 			&stmt.Switch{
 				Cond: &scalar.Lnumber{Value: "1"},
-				Cases: []node.Node{
-					&stmt.Case{
-						Cond: &scalar.Lnumber{Value: "1"},
-						Stmts: []node.Node{
-							&stmt.Break{},
+				CaseList: &stmt.CaseList{
+					Cases: []node.Node{
+						&stmt.Case{
+							Cond: &scalar.Lnumber{Value: "1"},
+							Stmts: []node.Node{
+								&stmt.Break{},
+							},
 						},
-					},
-					&stmt.Case{
-						Cond: &scalar.Lnumber{Value: "2"},
-						Stmts: []node.Node{
-							&stmt.Break{},
+						&stmt.Case{
+							Cond: &scalar.Lnumber{Value: "2"},
+							Stmts: []node.Node{
+								&stmt.Break{},
+							},
 						},
 					},
 				},
@@ -112,10 +126,14 @@ func TestSwitch(t *testing.T) {
 		},
 	}
 
-	actual, _, _ := php7.Parse(bytes.NewBufferString(src), "test.php")
+	php7parser := php7.NewParser(bytes.NewBufferString(src), "test.php")
+	php7parser.Parse()
+	actual := php7parser.GetRootNode()
 	assertEqual(t, expected, actual)
 
-	actual, _, _ = php5.Parse(bytes.NewBufferString(src), "test.php")
+	php5parser := php5.NewParser(bytes.NewBufferString(src), "test.php")
+	php5parser.Parse()
+	actual = php5parser.GetRootNode()
 	assertEqual(t, expected, actual)
 }
 
@@ -127,21 +145,23 @@ func TestSwitchSemicolon(t *testing.T) {
 		}
 	`
 
-	expected := &stmt.StmtList{
+	expected := &node.Root{
 		Stmts: []node.Node{
 			&stmt.Switch{
 				Cond: &scalar.Lnumber{Value: "1"},
-				Cases: []node.Node{
-					&stmt.Case{
-						Cond: &scalar.Lnumber{Value: "1"},
-						Stmts: []node.Node{
-							&stmt.Break{},
+				CaseList: &stmt.CaseList{
+					Cases: []node.Node{
+						&stmt.Case{
+							Cond: &scalar.Lnumber{Value: "1"},
+							Stmts: []node.Node{
+								&stmt.Break{},
+							},
 						},
-					},
-					&stmt.Case{
-						Cond: &scalar.Lnumber{Value: "2"},
-						Stmts: []node.Node{
-							&stmt.Break{},
+						&stmt.Case{
+							Cond: &scalar.Lnumber{Value: "2"},
+							Stmts: []node.Node{
+								&stmt.Break{},
+							},
 						},
 					},
 				},
@@ -149,9 +169,13 @@ func TestSwitchSemicolon(t *testing.T) {
 		},
 	}
 
-	actual, _, _ := php7.Parse(bytes.NewBufferString(src), "test.php")
+	php7parser := php7.NewParser(bytes.NewBufferString(src), "test.php")
+	php7parser.Parse()
+	actual := php7parser.GetRootNode()
 	assertEqual(t, expected, actual)
 
-	actual, _, _ = php5.Parse(bytes.NewBufferString(src), "test.php")
+	php5parser := php5.NewParser(bytes.NewBufferString(src), "test.php")
+	php5parser.Parse()
+	actual = php5parser.GetRootNode()
 	assertEqual(t, expected, actual)
 }

@@ -6,24 +6,24 @@ import (
 	"io"
 	"reflect"
 
-	"github.com/z7zmey/php-parser/node"
-	"github.com/z7zmey/php-parser/position"
-
 	"github.com/z7zmey/php-parser/comment"
+	"github.com/z7zmey/php-parser/node"
+	"github.com/z7zmey/php-parser/parser"
+
 	"github.com/z7zmey/php-parser/walker"
 )
 
-// Dumper prints ast hierarchy to stdout
+// Dumper writes ast hierarchy to an io.Writer
 // Also prints comments and positions attached to nodes
 type Dumper struct {
 	Writer     io.Writer
 	Indent     string
-	Comments   comment.Comments
-	Positions  position.Positions
+	Comments   parser.Comments
+	Positions  parser.Positions
 	NsResolver *NamespaceResolver
 }
 
-// EnterNode is invoked at every node in heirerchy
+// EnterNode is invoked at every node in hierarchy
 func (d Dumper) EnterNode(w walker.Walkable) bool {
 	n := w.(node.Node)
 
@@ -45,7 +45,7 @@ func (d Dumper) EnterNode(w walker.Walkable) bool {
 		if c := d.Comments[n]; len(c) > 0 {
 			fmt.Fprintf(d.Writer, "%v\"Comments\":\n", d.Indent+"  ")
 			for _, cc := range c {
-				fmt.Fprintf(d.Writer, "%v%q\n", d.Indent+"    ", cc)
+				fmt.Fprintf(d.Writer, "%v%q before %q\n", d.Indent+"    ", cc, comment.TokenNames[cc.TokenName()])
 			}
 		}
 	}

@@ -17,22 +17,26 @@ import (
 func TestShellExec(t *testing.T) {
 	src := "<? `cmd $a`;"
 
-	expected := &stmt.StmtList{
+	expected := &node.Root{
 		Stmts: []node.Node{
 			&stmt.Expression{
 				Expr: &expr.ShellExec{
 					Parts: []node.Node{
 						&scalar.EncapsedStringPart{Value: "cmd "},
-						&expr.Variable{VarName: &node.Identifier{Value: "$a"}},
+						&expr.Variable{VarName: &node.Identifier{Value: "a"}},
 					},
 				},
 			},
 		},
 	}
 
-	actual, _, _ := php7.Parse(bytes.NewBufferString(src), "test.php")
+	php7parser := php7.NewParser(bytes.NewBufferString(src), "test.php")
+	php7parser.Parse()
+	actual := php7parser.GetRootNode()
 	assertEqual(t, expected, actual)
 
-	actual, _, _ = php5.Parse(bytes.NewBufferString(src), "test.php")
+	php5parser := php5.NewParser(bytes.NewBufferString(src), "test.php")
+	php5parser.Parse()
+	actual = php5parser.GetRootNode()
 	assertEqual(t, expected, actual)
 }

@@ -17,7 +17,7 @@ import (
 func TestStaticCall(t *testing.T) {
 	src := `<? Foo::bar();`
 
-	expected := &stmt.StmtList{
+	expected := &node.Root{
 		Stmts: []node.Node{
 			&stmt.Expression{
 				Expr: &expr.StaticCall{
@@ -26,24 +26,28 @@ func TestStaticCall(t *testing.T) {
 							&name.NamePart{Value: "Foo"},
 						},
 					},
-					Call:      &node.Identifier{Value: "bar"},
-					Arguments: []node.Node{},
+					Call:         &node.Identifier{Value: "bar"},
+					ArgumentList: &node.ArgumentList{},
 				},
 			},
 		},
 	}
 
-	actual, _, _ := php7.Parse(bytes.NewBufferString(src), "test.php")
+	php7parser := php7.NewParser(bytes.NewBufferString(src), "test.php")
+	php7parser.Parse()
+	actual := php7parser.GetRootNode()
 	assertEqual(t, expected, actual)
 
-	actual, _, _ = php5.Parse(bytes.NewBufferString(src), "test.php")
+	php5parser := php5.NewParser(bytes.NewBufferString(src), "test.php")
+	php5parser.Parse()
+	actual = php5parser.GetRootNode()
 	assertEqual(t, expected, actual)
 }
 
 func TestStaticCallRelative(t *testing.T) {
 	src := `<? namespace\Foo::bar();`
 
-	expected := &stmt.StmtList{
+	expected := &node.Root{
 		Stmts: []node.Node{
 			&stmt.Expression{
 				Expr: &expr.StaticCall{
@@ -52,24 +56,28 @@ func TestStaticCallRelative(t *testing.T) {
 							&name.NamePart{Value: "Foo"},
 						},
 					},
-					Call:      &node.Identifier{Value: "bar"},
-					Arguments: []node.Node{},
+					Call:         &node.Identifier{Value: "bar"},
+					ArgumentList: &node.ArgumentList{},
 				},
 			},
 		},
 	}
 
-	actual, _, _ := php7.Parse(bytes.NewBufferString(src), "test.php")
+	php7parser := php7.NewParser(bytes.NewBufferString(src), "test.php")
+	php7parser.Parse()
+	actual := php7parser.GetRootNode()
 	assertEqual(t, expected, actual)
 
-	actual, _, _ = php5.Parse(bytes.NewBufferString(src), "test.php")
+	php5parser := php5.NewParser(bytes.NewBufferString(src), "test.php")
+	php5parser.Parse()
+	actual = php5parser.GetRootNode()
 	assertEqual(t, expected, actual)
 }
 
 func TestStaticCallFullyQualified(t *testing.T) {
 	src := `<? \Foo::bar();`
 
-	expected := &stmt.StmtList{
+	expected := &node.Root{
 		Stmts: []node.Node{
 			&stmt.Expression{
 				Expr: &expr.StaticCall{
@@ -78,24 +86,28 @@ func TestStaticCallFullyQualified(t *testing.T) {
 							&name.NamePart{Value: "Foo"},
 						},
 					},
-					Call:      &node.Identifier{Value: "bar"},
-					Arguments: []node.Node{},
+					Call:         &node.Identifier{Value: "bar"},
+					ArgumentList: &node.ArgumentList{},
 				},
 			},
 		},
 	}
 
-	actual, _, _ := php7.Parse(bytes.NewBufferString(src), "test.php")
+	php7parser := php7.NewParser(bytes.NewBufferString(src), "test.php")
+	php7parser.Parse()
+	actual := php7parser.GetRootNode()
 	assertEqual(t, expected, actual)
 
-	actual, _, _ = php5.Parse(bytes.NewBufferString(src), "test.php")
+	php5parser := php5.NewParser(bytes.NewBufferString(src), "test.php")
+	php5parser.Parse()
+	actual = php5parser.GetRootNode()
 	assertEqual(t, expected, actual)
 }
 
 func TestStaticCallVar(t *testing.T) {
 	src := `<? Foo::$bar();`
 
-	expected := &stmt.StmtList{
+	expected := &node.Root{
 		Stmts: []node.Node{
 			&stmt.Expression{
 				Expr: &expr.StaticCall{
@@ -104,38 +116,46 @@ func TestStaticCallVar(t *testing.T) {
 							&name.NamePart{Value: "Foo"},
 						},
 					},
-					Call:      &expr.Variable{VarName: &node.Identifier{Value: "$bar"}},
-					Arguments: []node.Node{},
+					Call:         &expr.Variable{VarName: &node.Identifier{Value: "bar"}},
+					ArgumentList: &node.ArgumentList{},
 				},
 			},
 		},
 	}
 
-	actual, _, _ := php7.Parse(bytes.NewBufferString(src), "test.php")
+	php7parser := php7.NewParser(bytes.NewBufferString(src), "test.php")
+	php7parser.Parse()
+	actual := php7parser.GetRootNode()
 	assertEqual(t, expected, actual)
 
-	actual, _, _ = php5.Parse(bytes.NewBufferString(src), "test.php")
+	php5parser := php5.NewParser(bytes.NewBufferString(src), "test.php")
+	php5parser.Parse()
+	actual = php5parser.GetRootNode()
 	assertEqual(t, expected, actual)
 }
 
 func TestStaticCallVarVar(t *testing.T) {
 	src := `<? $foo::$bar();`
 
-	expected := &stmt.StmtList{
+	expected := &node.Root{
 		Stmts: []node.Node{
 			&stmt.Expression{
 				Expr: &expr.StaticCall{
-					Class:     &expr.Variable{VarName: &node.Identifier{Value: "$foo"}},
-					Call:      &expr.Variable{VarName: &node.Identifier{Value: "$bar"}},
-					Arguments: []node.Node{},
+					Class:        &expr.Variable{VarName: &node.Identifier{Value: "foo"}},
+					Call:         &expr.Variable{VarName: &node.Identifier{Value: "bar"}},
+					ArgumentList: &node.ArgumentList{},
 				},
 			},
 		},
 	}
 
-	actual, _, _ := php7.Parse(bytes.NewBufferString(src), "test.php")
+	php7parser := php7.NewParser(bytes.NewBufferString(src), "test.php")
+	php7parser.Parse()
+	actual := php7parser.GetRootNode()
 	assertEqual(t, expected, actual)
 
-	actual, _, _ = php5.Parse(bytes.NewBufferString(src), "test.php")
+	php5parser := php5.NewParser(bytes.NewBufferString(src), "test.php")
+	php5parser.Parse()
+	actual = php5parser.GetRootNode()
 	assertEqual(t, expected, actual)
 }

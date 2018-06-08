@@ -3,6 +3,7 @@ package visitor_test
 
 import (
 	"bytes"
+	"os"
 
 	"github.com/z7zmey/php-parser/php7"
 	"github.com/z7zmey/php-parser/visitor"
@@ -21,21 +22,24 @@ func ExampleDumper() {
 			}
 		}`
 
-	nodes, comments, positions := php7.Parse(bytes.NewBufferString(src), "test.php")
+	php7parser := php7.NewParser(bytes.NewBufferString(src), "test.php")
+	php7parser.Parse()
+	nodes := php7parser.GetRootNode()
 
 	nsResolver := visitor.NewNamespaceResolver()
 	nodes.Walk(nsResolver)
 
 	dumper := visitor.Dumper{
+		Writer:     os.Stdout,
 		Indent:     "| ",
-		Comments:   comments,
-		Positions:  positions,
+		Comments:   php7parser.GetComments(),
+		Positions:  php7parser.GetPositions(),
 		NsResolver: nsResolver,
 	}
 	nodes.Walk(dumper)
 
 	// Unordered output:
-	//| [*stmt.StmtList]
+	//| [*node.Root]
 	//|   "Position": Pos{Line: 3-11 Pos: 10-143};
 	//|   "Stmts":
 	//|     [*stmt.Namespace]
@@ -59,8 +63,8 @@ func ExampleDumper() {
 	//|           "Stmts":
 	//|             [*stmt.ClassMethod]
 	//|               "Position": Pos{Line: 5-9 Pos: 45-134};
-	//|               "PhpDocComment": ;
 	//|               "ReturnsRef": false;
+	//|               "PhpDocComment": ;
 	//|               "MethodName":
 	//|                 [*node.Identifier]
 	//|                   "Position": Pos{Line: 5-5 Pos: 61-72};
@@ -88,7 +92,7 @@ func ExampleDumper() {
 	//|                       "VarName":
 	//|                         [*node.Identifier]
 	//|                           "Position": Pos{Line: 5-5 Pos: 79-82};
-	//|                           "Value": $var;
+	//|                           "Value": var;
 	//|                   "DefaultValue":
 	//|                     [*expr.ConstFetch]
 	//|                       "Position": Pos{Line: 5-5 Pos: 86-89};
@@ -100,20 +104,19 @@ func ExampleDumper() {
 	//|                             [*name.NamePart]
 	//|                               "Position": Pos{Line: 5-5 Pos: 86-89};
 	//|                               "Value": null;
-	//|               "Stmts":
-	//|                 [*stmt.Expression]
-	//|                   "Position": Pos{Line: 8-8 Pos: 124-128};
-	//|                   "Comments":
-	//|                     "// some comment\n"
-	//|                   "Expr":
-	//|                     [*expr.Variable]
-	//|                       "Position": Pos{Line: 8-8 Pos: 124-127};
-	//|                       "Comments":
-	//|                         "// some comment\n"
-	//|                       "VarName":
-	//|                         [*node.Identifier]
+	//|               "Stmt":
+	//|                 [*stmt.StmtList]
+	//|                   "Position": Pos{Line: 6-9 Pos: 96-134};
+	//|                   "Stmts":
+	//|                     [*stmt.Expression]
+	//|                       "Position": Pos{Line: 8-8 Pos: 124-128};
+	//|                       "Expr":
+	//|                         [*expr.Variable]
 	//|                           "Position": Pos{Line: 8-8 Pos: 124-127};
-	//|                           "Value": $var;
 	//|                           "Comments":
-	//|                             "// some comment\n"
+	//|                             "// some comment\n" before "VariableToken"
+	//|                           "VarName":
+	//|                             [*node.Identifier]
+	//|                               "Position": Pos{Line: 8-8 Pos: 124-127};
+	//|                               "Value": var;
 }

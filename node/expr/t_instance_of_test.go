@@ -17,11 +17,11 @@ import (
 func TestInstanceOf(t *testing.T) {
 	src := `<? $a instanceof Foo;`
 
-	expected := &stmt.StmtList{
+	expected := &node.Root{
 		Stmts: []node.Node{
 			&stmt.Expression{
 				Expr: &expr.InstanceOf{
-					Expr: &expr.Variable{VarName: &node.Identifier{Value: "$a"}},
+					Expr: &expr.Variable{VarName: &node.Identifier{Value: "a"}},
 					Class: &name.Name{
 						Parts: []node.Node{
 							&name.NamePart{Value: "Foo"},
@@ -32,21 +32,25 @@ func TestInstanceOf(t *testing.T) {
 		},
 	}
 
-	actual, _, _ := php7.Parse(bytes.NewBufferString(src), "test.php")
+	php7parser := php7.NewParser(bytes.NewBufferString(src), "test.php")
+	php7parser.Parse()
+	actual := php7parser.GetRootNode()
 	assertEqual(t, expected, actual)
 
-	actual, _, _ = php5.Parse(bytes.NewBufferString(src), "test.php")
+	php5parser := php5.NewParser(bytes.NewBufferString(src), "test.php")
+	php5parser.Parse()
+	actual = php5parser.GetRootNode()
 	assertEqual(t, expected, actual)
 }
 
 func TestInstanceOfRelative(t *testing.T) {
 	src := `<? $a instanceof namespace\Foo;`
 
-	expected := &stmt.StmtList{
+	expected := &node.Root{
 		Stmts: []node.Node{
 			&stmt.Expression{
 				Expr: &expr.InstanceOf{
-					Expr: &expr.Variable{VarName: &node.Identifier{Value: "$a"}},
+					Expr: &expr.Variable{VarName: &node.Identifier{Value: "a"}},
 					Class: &name.Relative{
 						Parts: []node.Node{
 							&name.NamePart{Value: "Foo"},
@@ -57,21 +61,25 @@ func TestInstanceOfRelative(t *testing.T) {
 		},
 	}
 
-	actual, _, _ := php7.Parse(bytes.NewBufferString(src), "test.php")
+	php7parser := php7.NewParser(bytes.NewBufferString(src), "test.php")
+	php7parser.Parse()
+	actual := php7parser.GetRootNode()
 	assertEqual(t, expected, actual)
 
-	actual, _, _ = php5.Parse(bytes.NewBufferString(src), "test.php")
+	php5parser := php5.NewParser(bytes.NewBufferString(src), "test.php")
+	php5parser.Parse()
+	actual = php5parser.GetRootNode()
 	assertEqual(t, expected, actual)
 }
 
 func TestInstanceOfFullyQualified(t *testing.T) {
 	src := `<? $a instanceof \Foo;`
 
-	expected := &stmt.StmtList{
+	expected := &node.Root{
 		Stmts: []node.Node{
 			&stmt.Expression{
 				Expr: &expr.InstanceOf{
-					Expr: &expr.Variable{VarName: &node.Identifier{Value: "$a"}},
+					Expr: &expr.Variable{VarName: &node.Identifier{Value: "a"}},
 					Class: &name.FullyQualified{
 						Parts: []node.Node{
 							&name.NamePart{Value: "Foo"},
@@ -82,9 +90,13 @@ func TestInstanceOfFullyQualified(t *testing.T) {
 		},
 	}
 
-	actual, _, _ := php7.Parse(bytes.NewBufferString(src), "test.php")
+	php7parser := php7.NewParser(bytes.NewBufferString(src), "test.php")
+	php7parser.Parse()
+	actual := php7parser.GetRootNode()
 	assertEqual(t, expected, actual)
 
-	actual, _, _ = php5.Parse(bytes.NewBufferString(src), "test.php")
+	php5parser := php5.NewParser(bytes.NewBufferString(src), "test.php")
+	php5parser.Parse()
+	actual = php5parser.GetRootNode()
 	assertEqual(t, expected, actual)
 }

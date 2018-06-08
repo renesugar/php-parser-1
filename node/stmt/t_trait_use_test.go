@@ -2,8 +2,9 @@ package stmt_test
 
 import (
 	"bytes"
-	"github.com/z7zmey/php-parser/node/name"
 	"testing"
+
+	"github.com/z7zmey/php-parser/node/name"
 
 	"github.com/z7zmey/php-parser/node"
 	"github.com/z7zmey/php-parser/node/stmt"
@@ -14,7 +15,7 @@ import (
 func TestTraitUse(t *testing.T) {
 	src := `<? class Foo { use Bar; }`
 
-	expected := &stmt.StmtList{
+	expected := &node.Root{
 		Stmts: []node.Node{
 			&stmt.Class{
 				PhpDocComment: "",
@@ -34,17 +35,21 @@ func TestTraitUse(t *testing.T) {
 		},
 	}
 
-	actual, _, _ := php7.Parse(bytes.NewBufferString(src), "test.php")
+	php7parser := php7.NewParser(bytes.NewBufferString(src), "test.php")
+	php7parser.Parse()
+	actual := php7parser.GetRootNode()
 	assertEqual(t, expected, actual)
 
-	actual, _, _ = php5.Parse(bytes.NewBufferString(src), "test.php")
+	php5parser := php5.NewParser(bytes.NewBufferString(src), "test.php")
+	php5parser.Parse()
+	actual = php5parser.GetRootNode()
 	assertEqual(t, expected, actual)
 }
 
 func TestTraitsUse(t *testing.T) {
 	src := `<? class Foo { use Bar, Baz; }`
 
-	expected := &stmt.StmtList{
+	expected := &node.Root{
 		Stmts: []node.Node{
 			&stmt.Class{
 				PhpDocComment: "",
@@ -69,17 +74,21 @@ func TestTraitsUse(t *testing.T) {
 		},
 	}
 
-	actual, _, _ := php7.Parse(bytes.NewBufferString(src), "test.php")
+	php7parser := php7.NewParser(bytes.NewBufferString(src), "test.php")
+	php7parser.Parse()
+	actual := php7parser.GetRootNode()
 	assertEqual(t, expected, actual)
 
-	actual, _, _ = php5.Parse(bytes.NewBufferString(src), "test.php")
+	php5parser := php5.NewParser(bytes.NewBufferString(src), "test.php")
+	php5parser.Parse()
+	actual = php5parser.GetRootNode()
 	assertEqual(t, expected, actual)
 }
 
 func TestTraitsUseEmptyAdaptations(t *testing.T) {
 	src := `<? class Foo { use Bar, Baz {} }`
 
-	expected := &stmt.StmtList{
+	expected := &node.Root{
 		Stmts: []node.Node{
 			&stmt.Class{
 				PhpDocComment: "",
@@ -98,23 +107,28 @@ func TestTraitsUseEmptyAdaptations(t *testing.T) {
 								},
 							},
 						},
+						TraitAdaptationList: &stmt.TraitAdaptationList{},
 					},
 				},
 			},
 		},
 	}
 
-	actual, _, _ := php7.Parse(bytes.NewBufferString(src), "test.php")
+	php7parser := php7.NewParser(bytes.NewBufferString(src), "test.php")
+	php7parser.Parse()
+	actual := php7parser.GetRootNode()
 	assertEqual(t, expected, actual)
 
-	actual, _, _ = php5.Parse(bytes.NewBufferString(src), "test.php")
+	php5parser := php5.NewParser(bytes.NewBufferString(src), "test.php")
+	php5parser.Parse()
+	actual = php5parser.GetRootNode()
 	assertEqual(t, expected, actual)
 }
 
 func TestTraitsUseModifier(t *testing.T) {
 	src := `<? class Foo { use Bar, Baz { one as public; } }`
 
-	expected := &stmt.StmtList{
+	expected := &node.Root{
 		Stmts: []node.Node{
 			&stmt.Class{
 				PhpDocComment: "",
@@ -133,12 +147,14 @@ func TestTraitsUseModifier(t *testing.T) {
 								},
 							},
 						},
-						Adaptations: []node.Node{
-							&stmt.TraitUseAlias{
-								Ref: &stmt.TraitMethodRef{
-									Method: &node.Identifier{Value: "one"},
+						TraitAdaptationList: &stmt.TraitAdaptationList{
+							Adaptations: []node.Node{
+								&stmt.TraitUseAlias{
+									Ref: &stmt.TraitMethodRef{
+										Method: &node.Identifier{Value: "one"},
+									},
+									Modifier: &node.Identifier{Value: "public"},
 								},
-								Modifier: &node.Identifier{Value: "public"},
 							},
 						},
 					},
@@ -147,17 +163,21 @@ func TestTraitsUseModifier(t *testing.T) {
 		},
 	}
 
-	actual, _, _ := php7.Parse(bytes.NewBufferString(src), "test.php")
+	php7parser := php7.NewParser(bytes.NewBufferString(src), "test.php")
+	php7parser.Parse()
+	actual := php7parser.GetRootNode()
 	assertEqual(t, expected, actual)
 
-	actual, _, _ = php5.Parse(bytes.NewBufferString(src), "test.php")
+	php5parser := php5.NewParser(bytes.NewBufferString(src), "test.php")
+	php5parser.Parse()
+	actual = php5parser.GetRootNode()
 	assertEqual(t, expected, actual)
 }
 
 func TestTraitsUseAliasModifier(t *testing.T) {
 	src := `<? class Foo { use Bar, Baz { one as public two; } }`
 
-	expected := &stmt.StmtList{
+	expected := &node.Root{
 		Stmts: []node.Node{
 			&stmt.Class{
 				PhpDocComment: "",
@@ -176,13 +196,15 @@ func TestTraitsUseAliasModifier(t *testing.T) {
 								},
 							},
 						},
-						Adaptations: []node.Node{
-							&stmt.TraitUseAlias{
-								Ref: &stmt.TraitMethodRef{
-									Method: &node.Identifier{Value: "one"},
+						TraitAdaptationList: &stmt.TraitAdaptationList{
+							Adaptations: []node.Node{
+								&stmt.TraitUseAlias{
+									Ref: &stmt.TraitMethodRef{
+										Method: &node.Identifier{Value: "one"},
+									},
+									Modifier: &node.Identifier{Value: "public"},
+									Alias:    &node.Identifier{Value: "two"},
 								},
-								Modifier: &node.Identifier{Value: "public"},
-								Alias:    &node.Identifier{Value: "two"},
 							},
 						},
 					},
@@ -191,17 +213,21 @@ func TestTraitsUseAliasModifier(t *testing.T) {
 		},
 	}
 
-	actual, _, _ := php7.Parse(bytes.NewBufferString(src), "test.php")
+	php7parser := php7.NewParser(bytes.NewBufferString(src), "test.php")
+	php7parser.Parse()
+	actual := php7parser.GetRootNode()
 	assertEqual(t, expected, actual)
 
-	actual, _, _ = php5.Parse(bytes.NewBufferString(src), "test.php")
+	php5parser := php5.NewParser(bytes.NewBufferString(src), "test.php")
+	php5parser.Parse()
+	actual = php5parser.GetRootNode()
 	assertEqual(t, expected, actual)
 }
 
 func TestTraitsUseAdaptions(t *testing.T) {
 	src := `<? class Foo { use Bar, Baz { Bar::one insteadof Baz, Quux; Baz::one as two; } }`
 
-	expected := &stmt.StmtList{
+	expected := &node.Root{
 		Stmts: []node.Node{
 			&stmt.Class{
 				PhpDocComment: "",
@@ -220,39 +246,41 @@ func TestTraitsUseAdaptions(t *testing.T) {
 								},
 							},
 						},
-						Adaptations: []node.Node{
-							&stmt.TraitUsePrecedence{
-								Ref: &stmt.TraitMethodRef{
-									Trait: &name.Name{
-										Parts: []node.Node{
-											&name.NamePart{Value: "Bar"},
+						TraitAdaptationList: &stmt.TraitAdaptationList{
+							Adaptations: []node.Node{
+								&stmt.TraitUsePrecedence{
+									Ref: &stmt.TraitMethodRef{
+										Trait: &name.Name{
+											Parts: []node.Node{
+												&name.NamePart{Value: "Bar"},
+											},
+										},
+										Method: &node.Identifier{Value: "one"},
+									},
+									Insteadof: []node.Node{
+										&name.Name{
+											Parts: []node.Node{
+												&name.NamePart{Value: "Baz"},
+											},
+										},
+										&name.Name{
+											Parts: []node.Node{
+												&name.NamePart{Value: "Quux"},
+											},
 										},
 									},
-									Method: &node.Identifier{Value: "one"},
 								},
-								Insteadof: []node.Node{
-									&name.Name{
-										Parts: []node.Node{
-											&name.NamePart{Value: "Baz"},
+								&stmt.TraitUseAlias{
+									Ref: &stmt.TraitMethodRef{
+										Trait: &name.Name{
+											Parts: []node.Node{
+												&name.NamePart{Value: "Baz"},
+											},
 										},
+										Method: &node.Identifier{Value: "one"},
 									},
-									&name.Name{
-										Parts: []node.Node{
-											&name.NamePart{Value: "Quux"},
-										},
-									},
+									Alias: &node.Identifier{Value: "two"},
 								},
-							},
-							&stmt.TraitUseAlias{
-								Ref: &stmt.TraitMethodRef{
-									Trait: &name.Name{
-										Parts: []node.Node{
-											&name.NamePart{Value: "Baz"},
-										},
-									},
-									Method: &node.Identifier{Value: "one"},
-								},
-								Alias: &node.Identifier{Value: "two"},
 							},
 						},
 					},
@@ -261,9 +289,13 @@ func TestTraitsUseAdaptions(t *testing.T) {
 		},
 	}
 
-	actual, _, _ := php7.Parse(bytes.NewBufferString(src), "test.php")
+	php7parser := php7.NewParser(bytes.NewBufferString(src), "test.php")
+	php7parser.Parse()
+	actual := php7parser.GetRootNode()
 	assertEqual(t, expected, actual)
 
-	actual, _, _ = php5.Parse(bytes.NewBufferString(src), "test.php")
+	php5parser := php5.NewParser(bytes.NewBufferString(src), "test.php")
+	php5parser.Parse()
+	actual = php5parser.GetRootNode()
 	assertEqual(t, expected, actual)
 }

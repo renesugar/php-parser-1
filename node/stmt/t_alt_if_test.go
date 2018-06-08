@@ -33,19 +33,23 @@ func TestAltIf(t *testing.T) {
 		endif;
 	`
 
-	expected := &stmt.StmtList{
+	expected := &node.Root{
 		Stmts: []node.Node{
 			&stmt.AltIf{
-				Cond: &expr.Variable{VarName: &node.Identifier{Value: "$a"}},
+				Cond: &expr.Variable{VarName: &node.Identifier{Value: "a"}},
 				Stmt: &stmt.StmtList{Stmts: []node.Node{}},
 			},
 		},
 	}
 
-	actual, _, _ := php7.Parse(bytes.NewBufferString(src), "test.php")
+	php7parser := php7.NewParser(bytes.NewBufferString(src), "test.php")
+	php7parser.Parse()
+	actual := php7parser.GetRootNode()
 	assertEqual(t, expected, actual)
 
-	actual, _, _ = php5.Parse(bytes.NewBufferString(src), "test.php")
+	php5parser := php5.NewParser(bytes.NewBufferString(src), "test.php")
+	php5parser.Parse()
+	actual = php5parser.GetRootNode()
 	assertEqual(t, expected, actual)
 }
 
@@ -56,14 +60,14 @@ func TestAltElseIf(t *testing.T) {
 		endif;
 	`
 
-	expected := &stmt.StmtList{
+	expected := &node.Root{
 		Stmts: []node.Node{
 			&stmt.AltIf{
-				Cond: &expr.Variable{VarName: &node.Identifier{Value: "$a"}},
+				Cond: &expr.Variable{VarName: &node.Identifier{Value: "a"}},
 				Stmt: &stmt.StmtList{Stmts: []node.Node{}},
 				ElseIf: []node.Node{
 					&stmt.AltElseIf{
-						Cond: &expr.Variable{VarName: &node.Identifier{Value: "$b"}},
+						Cond: &expr.Variable{VarName: &node.Identifier{Value: "b"}},
 						Stmt: &stmt.StmtList{Stmts: []node.Node{}},
 					},
 				},
@@ -71,10 +75,14 @@ func TestAltElseIf(t *testing.T) {
 		},
 	}
 
-	actual, _, _ := php7.Parse(bytes.NewBufferString(src), "test.php")
+	php7parser := php7.NewParser(bytes.NewBufferString(src), "test.php")
+	php7parser.Parse()
+	actual := php7parser.GetRootNode()
 	assertEqual(t, expected, actual)
 
-	actual, _, _ = php5.Parse(bytes.NewBufferString(src), "test.php")
+	php5parser := php5.NewParser(bytes.NewBufferString(src), "test.php")
+	php5parser.Parse()
+	actual = php5parser.GetRootNode()
 	assertEqual(t, expected, actual)
 }
 
@@ -85,10 +93,10 @@ func TestAltElse(t *testing.T) {
 		endif;
 	`
 
-	expected := &stmt.StmtList{
+	expected := &node.Root{
 		Stmts: []node.Node{
 			&stmt.AltIf{
-				Cond: &expr.Variable{VarName: &node.Identifier{Value: "$a"}},
+				Cond: &expr.Variable{VarName: &node.Identifier{Value: "a"}},
 				Stmt: &stmt.StmtList{Stmts: []node.Node{}},
 				Else: &stmt.AltElse{
 					Stmt: &stmt.StmtList{Stmts: []node.Node{}},
@@ -97,10 +105,14 @@ func TestAltElse(t *testing.T) {
 		},
 	}
 
-	actual, _, _ := php7.Parse(bytes.NewBufferString(src), "test.php")
+	php7parser := php7.NewParser(bytes.NewBufferString(src), "test.php")
+	php7parser.Parse()
+	actual := php7parser.GetRootNode()
 	assertEqual(t, expected, actual)
 
-	actual, _, _ = php5.Parse(bytes.NewBufferString(src), "test.php")
+	php5parser := php5.NewParser(bytes.NewBufferString(src), "test.php")
+	php5parser.Parse()
+	actual = php5parser.GetRootNode()
 	assertEqual(t, expected, actual)
 }
 
@@ -113,18 +125,18 @@ func TestAltElseElseIf(t *testing.T) {
 		endif;
 	`
 
-	expected := &stmt.StmtList{
+	expected := &node.Root{
 		Stmts: []node.Node{
 			&stmt.AltIf{
-				Cond: &expr.Variable{VarName: &node.Identifier{Value: "$a"}},
+				Cond: &expr.Variable{VarName: &node.Identifier{Value: "a"}},
 				Stmt: &stmt.StmtList{Stmts: []node.Node{}},
 				ElseIf: []node.Node{
 					&stmt.AltElseIf{
-						Cond: &expr.Variable{VarName: &node.Identifier{Value: "$b"}},
+						Cond: &expr.Variable{VarName: &node.Identifier{Value: "b"}},
 						Stmt: &stmt.StmtList{Stmts: []node.Node{}},
 					},
 					&stmt.AltElseIf{
-						Cond: &expr.Variable{VarName: &node.Identifier{Value: "$c"}},
+						Cond: &expr.Variable{VarName: &node.Identifier{Value: "c"}},
 						Stmt: &stmt.StmtList{Stmts: []node.Node{}},
 					},
 				},
@@ -135,9 +147,13 @@ func TestAltElseElseIf(t *testing.T) {
 		},
 	}
 
-	actual, _, _ := php7.Parse(bytes.NewBufferString(src), "test.php")
+	php7parser := php7.NewParser(bytes.NewBufferString(src), "test.php")
+	php7parser.Parse()
+	actual := php7parser.GetRootNode()
 	assertEqual(t, expected, actual)
 
-	actual, _, _ = php5.Parse(bytes.NewBufferString(src), "test.php")
+	php5parser := php5.NewParser(bytes.NewBufferString(src), "test.php")
+	php5parser.Parse()
+	actual = php5parser.GetRootNode()
 	assertEqual(t, expected, actual)
 }

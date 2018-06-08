@@ -17,31 +17,34 @@ import (
 func TestClosure(t *testing.T) {
 	src := `<? function(){};`
 
-	expected := &stmt.StmtList{
+	expected := &node.Root{
 		Stmts: []node.Node{
 			&stmt.Expression{
 				Expr: &expr.Closure{
 					ReturnsRef:    false,
 					Static:        false,
 					PhpDocComment: "",
-					Uses:          []node.Node{},
 					Stmts:         []node.Node{},
 				},
 			},
 		},
 	}
 
-	actual, _, _ := php7.Parse(bytes.NewBufferString(src), "test.php")
+	php7parser := php7.NewParser(bytes.NewBufferString(src), "test.php")
+	php7parser.Parse()
+	actual := php7parser.GetRootNode()
 	assertEqual(t, expected, actual)
 
-	actual, _, _ = php5.Parse(bytes.NewBufferString(src), "test.php")
+	php5parser := php5.NewParser(bytes.NewBufferString(src), "test.php")
+	php5parser.Parse()
+	actual = php5parser.GetRootNode()
 	assertEqual(t, expected, actual)
 }
 
 func TestClosureUse(t *testing.T) {
 	src := `<? function($a, $b) use ($c, &$d) {};`
 
-	expected := &stmt.StmtList{
+	expected := &node.Root{
 		Stmts: []node.Node{
 			&stmt.Expression{
 				Expr: &expr.Closure{
@@ -52,22 +55,18 @@ func TestClosureUse(t *testing.T) {
 						&node.Parameter{
 							ByRef:    false,
 							Variadic: false,
-							Variable: &expr.Variable{VarName: &node.Identifier{Value: "$a"}},
+							Variable: &expr.Variable{VarName: &node.Identifier{Value: "a"}},
 						},
 						&node.Parameter{
 							ByRef:    false,
 							Variadic: false,
-							Variable: &expr.Variable{VarName: &node.Identifier{Value: "$b"}},
+							Variable: &expr.Variable{VarName: &node.Identifier{Value: "b"}},
 						},
 					},
-					Uses: []node.Node{
-						&expr.ClosureUse{
-							ByRef:    false,
-							Variable: &expr.Variable{VarName: &node.Identifier{Value: "$c"}},
-						},
-						&expr.ClosureUse{
-							ByRef:    true,
-							Variable: &expr.Variable{VarName: &node.Identifier{Value: "$d"}},
+					ClosureUse: &expr.ClosureUse{
+						Uses: []node.Node{
+							&expr.Variable{VarName: &node.Identifier{Value: "c"}},
+							&expr.Reference{Variable: &expr.Variable{VarName: &node.Identifier{Value: "d"}}},
 						},
 					},
 					Stmts: []node.Node{},
@@ -76,17 +75,21 @@ func TestClosureUse(t *testing.T) {
 		},
 	}
 
-	actual, _, _ := php7.Parse(bytes.NewBufferString(src), "test.php")
+	php7parser := php7.NewParser(bytes.NewBufferString(src), "test.php")
+	php7parser.Parse()
+	actual := php7parser.GetRootNode()
 	assertEqual(t, expected, actual)
 
-	actual, _, _ = php5.Parse(bytes.NewBufferString(src), "test.php")
+	php5parser := php5.NewParser(bytes.NewBufferString(src), "test.php")
+	php5parser.Parse()
+	actual = php5parser.GetRootNode()
 	assertEqual(t, expected, actual)
 }
 
 func TestClosureUse2(t *testing.T) {
 	src := `<? function($a, $b) use (&$c, $d) {};`
 
-	expected := &stmt.StmtList{
+	expected := &node.Root{
 		Stmts: []node.Node{
 			&stmt.Expression{
 				Expr: &expr.Closure{
@@ -97,22 +100,18 @@ func TestClosureUse2(t *testing.T) {
 						&node.Parameter{
 							ByRef:    false,
 							Variadic: false,
-							Variable: &expr.Variable{VarName: &node.Identifier{Value: "$a"}},
+							Variable: &expr.Variable{VarName: &node.Identifier{Value: "a"}},
 						},
 						&node.Parameter{
 							ByRef:    false,
 							Variadic: false,
-							Variable: &expr.Variable{VarName: &node.Identifier{Value: "$b"}},
+							Variable: &expr.Variable{VarName: &node.Identifier{Value: "b"}},
 						},
 					},
-					Uses: []node.Node{
-						&expr.ClosureUse{
-							ByRef:    true,
-							Variable: &expr.Variable{VarName: &node.Identifier{Value: "$c"}},
-						},
-						&expr.ClosureUse{
-							ByRef:    false,
-							Variable: &expr.Variable{VarName: &node.Identifier{Value: "$d"}},
+					ClosureUse: &expr.ClosureUse{
+						Uses: []node.Node{
+							&expr.Reference{Variable: &expr.Variable{VarName: &node.Identifier{Value: "c"}}},
+							&expr.Variable{VarName: &node.Identifier{Value: "d"}},
 						},
 					},
 					Stmts: []node.Node{},
@@ -121,24 +120,27 @@ func TestClosureUse2(t *testing.T) {
 		},
 	}
 
-	actual, _, _ := php7.Parse(bytes.NewBufferString(src), "test.php")
+	php7parser := php7.NewParser(bytes.NewBufferString(src), "test.php")
+	php7parser.Parse()
+	actual := php7parser.GetRootNode()
 	assertEqual(t, expected, actual)
 
-	actual, _, _ = php5.Parse(bytes.NewBufferString(src), "test.php")
+	php5parser := php5.NewParser(bytes.NewBufferString(src), "test.php")
+	php5parser.Parse()
+	actual = php5parser.GetRootNode()
 	assertEqual(t, expected, actual)
 }
 
 func TestClosureReturnType(t *testing.T) {
 	src := `<? function(): void {};`
 
-	expected := &stmt.StmtList{
+	expected := &node.Root{
 		Stmts: []node.Node{
 			&stmt.Expression{
 				Expr: &expr.Closure{
 					ReturnsRef:    false,
 					Static:        false,
 					PhpDocComment: "",
-					Uses:          []node.Node{},
 					ReturnType: &name.Name{
 						Parts: []node.Node{&name.NamePart{Value: "void"}},
 					},
@@ -148,6 +150,8 @@ func TestClosureReturnType(t *testing.T) {
 		},
 	}
 
-	actual, _, _ := php7.Parse(bytes.NewBufferString(src), "test.php")
+	php7parser := php7.NewParser(bytes.NewBufferString(src), "test.php")
+	php7parser.Parse()
+	actual := php7parser.GetRootNode()
 	assertEqual(t, expected, actual)
 }

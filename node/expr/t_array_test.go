@@ -17,7 +17,7 @@ import (
 func TestArray(t *testing.T) {
 	src := `<? array();`
 
-	expected := &stmt.StmtList{
+	expected := &node.Root{
 		Stmts: []node.Node{
 			&stmt.Expression{
 				Expr: &expr.Array{
@@ -27,24 +27,27 @@ func TestArray(t *testing.T) {
 		},
 	}
 
-	actual, _, _ := php7.Parse(bytes.NewBufferString(src), "test.php")
+	php7parser := php7.NewParser(bytes.NewBufferString(src), "test.php")
+	php7parser.Parse()
+	actual := php7parser.GetRootNode()
 	assertEqual(t, expected, actual)
 
-	actual, _, _ = php5.Parse(bytes.NewBufferString(src), "test.php")
+	php5parser := php5.NewParser(bytes.NewBufferString(src), "test.php")
+	php5parser.Parse()
+	actual = php5parser.GetRootNode()
 	assertEqual(t, expected, actual)
 }
 
 func TestArrayItem(t *testing.T) {
 	src := `<? array(1);`
 
-	expected := &stmt.StmtList{
+	expected := &node.Root{
 		Stmts: []node.Node{
 			&stmt.Expression{
 				Expr: &expr.Array{
 					Items: []node.Node{
 						&expr.ArrayItem{
-							ByRef: false,
-							Val:   &scalar.Lnumber{Value: "1"},
+							Val: &scalar.Lnumber{Value: "1"},
 						},
 					},
 				},
@@ -52,29 +55,31 @@ func TestArrayItem(t *testing.T) {
 		},
 	}
 
-	actual, _, _ := php7.Parse(bytes.NewBufferString(src), "test.php")
+	php7parser := php7.NewParser(bytes.NewBufferString(src), "test.php")
+	php7parser.Parse()
+	actual := php7parser.GetRootNode()
 	assertEqual(t, expected, actual)
 
-	actual, _, _ = php5.Parse(bytes.NewBufferString(src), "test.php")
+	php5parser := php5.NewParser(bytes.NewBufferString(src), "test.php")
+	php5parser.Parse()
+	actual = php5parser.GetRootNode()
 	assertEqual(t, expected, actual)
 }
 
 func TestArrayItems(t *testing.T) {
 	src := `<? array(1=>1, &$b,);`
 
-	expected := &stmt.StmtList{
+	expected := &node.Root{
 		Stmts: []node.Node{
 			&stmt.Expression{
 				Expr: &expr.Array{
 					Items: []node.Node{
 						&expr.ArrayItem{
-							ByRef: false,
-							Key:   &scalar.Lnumber{Value: "1"},
-							Val:   &scalar.Lnumber{Value: "1"},
+							Key: &scalar.Lnumber{Value: "1"},
+							Val: &scalar.Lnumber{Value: "1"},
 						},
 						&expr.ArrayItem{
-							ByRef: true,
-							Val:   &expr.Variable{VarName: &node.Identifier{Value: "$b"}},
+							Val: &expr.Reference{Variable: &expr.Variable{VarName: &node.Identifier{Value: "b"}}},
 						},
 					},
 				},
@@ -82,9 +87,13 @@ func TestArrayItems(t *testing.T) {
 		},
 	}
 
-	actual, _, _ := php7.Parse(bytes.NewBufferString(src), "test.php")
+	php7parser := php7.NewParser(bytes.NewBufferString(src), "test.php")
+	php7parser.Parse()
+	actual := php7parser.GetRootNode()
 	assertEqual(t, expected, actual)
 
-	actual, _, _ = php5.Parse(bytes.NewBufferString(src), "test.php")
+	php5parser := php5.NewParser(bytes.NewBufferString(src), "test.php")
+	php5parser.Parse()
+	actual = php5parser.GetRootNode()
 	assertEqual(t, expected, actual)
 }

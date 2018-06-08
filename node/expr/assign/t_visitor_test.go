@@ -19,113 +19,113 @@ var nodesToTest = []struct {
 	expectedAttributes  map[string]interface{}
 }{
 	{
-		&assign.AssignRef{
-			Variable:   &expr.Variable{VarName: &node.Identifier{Value: "$a"}},
-			Expression: &expr.Variable{VarName: &node.Identifier{Value: "$b"}},
+		&assign.Reference{
+			Variable:   &expr.Variable{VarName: &node.Identifier{Value: "a"}},
+			Expression: &expr.Variable{VarName: &node.Identifier{Value: "b"}},
 		},
 		[]string{"Variable", "Expression"},
 		map[string]interface{}{},
 	},
 	{
 		&assign.Assign{
-			Variable:   &expr.Variable{VarName: &node.Identifier{Value: "$a"}},
-			Expression: &expr.Variable{VarName: &node.Identifier{Value: "$b"}},
+			Variable:   &expr.Variable{VarName: &node.Identifier{Value: "a"}},
+			Expression: &expr.Variable{VarName: &node.Identifier{Value: "b"}},
 		},
 		[]string{"Variable", "Expression"},
 		map[string]interface{}{},
 	},
 	{
 		&assign.BitwiseAnd{
-			Variable:   &expr.Variable{VarName: &node.Identifier{Value: "$a"}},
-			Expression: &expr.Variable{VarName: &node.Identifier{Value: "$b"}},
+			Variable:   &expr.Variable{VarName: &node.Identifier{Value: "a"}},
+			Expression: &expr.Variable{VarName: &node.Identifier{Value: "b"}},
 		},
 		[]string{"Variable", "Expression"},
 		map[string]interface{}{},
 	},
 	{
 		&assign.BitwiseOr{
-			Variable:   &expr.Variable{VarName: &node.Identifier{Value: "$a"}},
-			Expression: &expr.Variable{VarName: &node.Identifier{Value: "$b"}},
+			Variable:   &expr.Variable{VarName: &node.Identifier{Value: "a"}},
+			Expression: &expr.Variable{VarName: &node.Identifier{Value: "b"}},
 		},
 		[]string{"Variable", "Expression"},
 		map[string]interface{}{},
 	},
 	{
 		&assign.BitwiseXor{
-			Variable:   &expr.Variable{VarName: &node.Identifier{Value: "$a"}},
-			Expression: &expr.Variable{VarName: &node.Identifier{Value: "$b"}},
+			Variable:   &expr.Variable{VarName: &node.Identifier{Value: "a"}},
+			Expression: &expr.Variable{VarName: &node.Identifier{Value: "b"}},
 		},
 		[]string{"Variable", "Expression"},
 		map[string]interface{}{},
 	},
 	{
 		&assign.Concat{
-			Variable:   &expr.Variable{VarName: &node.Identifier{Value: "$a"}},
-			Expression: &expr.Variable{VarName: &node.Identifier{Value: "$b"}},
+			Variable:   &expr.Variable{VarName: &node.Identifier{Value: "a"}},
+			Expression: &expr.Variable{VarName: &node.Identifier{Value: "b"}},
 		},
 		[]string{"Variable", "Expression"},
 		map[string]interface{}{},
 	},
 	{
 		&assign.Div{
-			Variable:   &expr.Variable{VarName: &node.Identifier{Value: "$a"}},
-			Expression: &expr.Variable{VarName: &node.Identifier{Value: "$b"}},
+			Variable:   &expr.Variable{VarName: &node.Identifier{Value: "a"}},
+			Expression: &expr.Variable{VarName: &node.Identifier{Value: "b"}},
 		},
 		[]string{"Variable", "Expression"},
 		map[string]interface{}{},
 	},
 	{
 		&assign.Minus{
-			Variable:   &expr.Variable{VarName: &node.Identifier{Value: "$a"}},
-			Expression: &expr.Variable{VarName: &node.Identifier{Value: "$b"}},
+			Variable:   &expr.Variable{VarName: &node.Identifier{Value: "a"}},
+			Expression: &expr.Variable{VarName: &node.Identifier{Value: "b"}},
 		},
 		[]string{"Variable", "Expression"},
 		map[string]interface{}{},
 	},
 	{
 		&assign.Mod{
-			Variable:   &expr.Variable{VarName: &node.Identifier{Value: "$a"}},
-			Expression: &expr.Variable{VarName: &node.Identifier{Value: "$b"}},
+			Variable:   &expr.Variable{VarName: &node.Identifier{Value: "a"}},
+			Expression: &expr.Variable{VarName: &node.Identifier{Value: "b"}},
 		},
 		[]string{"Variable", "Expression"},
 		map[string]interface{}{},
 	},
 	{
 		&assign.Mul{
-			Variable:   &expr.Variable{VarName: &node.Identifier{Value: "$a"}},
-			Expression: &expr.Variable{VarName: &node.Identifier{Value: "$b"}},
+			Variable:   &expr.Variable{VarName: &node.Identifier{Value: "a"}},
+			Expression: &expr.Variable{VarName: &node.Identifier{Value: "b"}},
 		},
 		[]string{"Variable", "Expression"},
 		map[string]interface{}{},
 	},
 	{
 		&assign.Plus{
-			Variable:   &expr.Variable{VarName: &node.Identifier{Value: "$a"}},
-			Expression: &expr.Variable{VarName: &node.Identifier{Value: "$b"}},
+			Variable:   &expr.Variable{VarName: &node.Identifier{Value: "a"}},
+			Expression: &expr.Variable{VarName: &node.Identifier{Value: "b"}},
 		},
 		[]string{"Variable", "Expression"},
 		map[string]interface{}{},
 	},
 	{
 		&assign.Pow{
-			Variable:   &expr.Variable{VarName: &node.Identifier{Value: "$a"}},
-			Expression: &expr.Variable{VarName: &node.Identifier{Value: "$b"}},
+			Variable:   &expr.Variable{VarName: &node.Identifier{Value: "a"}},
+			Expression: &expr.Variable{VarName: &node.Identifier{Value: "b"}},
 		},
 		[]string{"Variable", "Expression"},
 		map[string]interface{}{},
 	},
 	{
 		&assign.ShiftLeft{
-			Variable:   &expr.Variable{VarName: &node.Identifier{Value: "$a"}},
-			Expression: &expr.Variable{VarName: &node.Identifier{Value: "$b"}},
+			Variable:   &expr.Variable{VarName: &node.Identifier{Value: "a"}},
+			Expression: &expr.Variable{VarName: &node.Identifier{Value: "b"}},
 		},
 		[]string{"Variable", "Expression"},
 		map[string]interface{}{},
 	},
 	{
 		&assign.ShiftRight{
-			Variable:   &expr.Variable{VarName: &node.Identifier{Value: "$a"}},
-			Expression: &expr.Variable{VarName: &node.Identifier{Value: "$b"}},
+			Variable:   &expr.Variable{VarName: &node.Identifier{Value: "a"}},
+			Expression: &expr.Variable{VarName: &node.Identifier{Value: "b"}},
 		},
 		[]string{"Variable", "Expression"},
 		map[string]interface{}{},

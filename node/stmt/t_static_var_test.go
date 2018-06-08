@@ -15,37 +15,41 @@ import (
 func TestStaticVar(t *testing.T) {
 	src := `<? static $a;`
 
-	expected := &stmt.StmtList{
+	expected := &node.Root{
 		Stmts: []node.Node{
 			&stmt.Static{
 				Vars: []node.Node{
 					&stmt.StaticVar{
-						Variable: &expr.Variable{VarName: &node.Identifier{Value: "$a"}},
+						Variable: &expr.Variable{VarName: &node.Identifier{Value: "a"}},
 					},
 				},
 			},
 		},
 	}
 
-	actual, _, _ := php7.Parse(bytes.NewBufferString(src), "test.php")
+	php7parser := php7.NewParser(bytes.NewBufferString(src), "test.php")
+	php7parser.Parse()
+	actual := php7parser.GetRootNode()
 	assertEqual(t, expected, actual)
 
-	actual, _, _ = php5.Parse(bytes.NewBufferString(src), "test.php")
+	php5parser := php5.NewParser(bytes.NewBufferString(src), "test.php")
+	php5parser.Parse()
+	actual = php5parser.GetRootNode()
 	assertEqual(t, expected, actual)
 }
 
 func TestStaticVars(t *testing.T) {
 	src := `<? static $a, $b = 1;`
 
-	expected := &stmt.StmtList{
+	expected := &node.Root{
 		Stmts: []node.Node{
 			&stmt.Static{
 				Vars: []node.Node{
 					&stmt.StaticVar{
-						Variable: &expr.Variable{VarName: &node.Identifier{Value: "$a"}},
+						Variable: &expr.Variable{VarName: &node.Identifier{Value: "a"}},
 					},
 					&stmt.StaticVar{
-						Variable: &expr.Variable{VarName: &node.Identifier{Value: "$b"}},
+						Variable: &expr.Variable{VarName: &node.Identifier{Value: "b"}},
 						Expr:     &scalar.Lnumber{Value: "1"},
 					},
 				},
@@ -53,35 +57,43 @@ func TestStaticVars(t *testing.T) {
 		},
 	}
 
-	actual, _, _ := php7.Parse(bytes.NewBufferString(src), "test.php")
+	php7parser := php7.NewParser(bytes.NewBufferString(src), "test.php")
+	php7parser.Parse()
+	actual := php7parser.GetRootNode()
 	assertEqual(t, expected, actual)
 
-	actual, _, _ = php5.Parse(bytes.NewBufferString(src), "test.php")
+	php5parser := php5.NewParser(bytes.NewBufferString(src), "test.php")
+	php5parser.Parse()
+	actual = php5parser.GetRootNode()
 	assertEqual(t, expected, actual)
 }
 
 func TestStaticVars2(t *testing.T) {
 	src := `<? static $a = 1, $b;`
 
-	expected := &stmt.StmtList{
+	expected := &node.Root{
 		Stmts: []node.Node{
 			&stmt.Static{
 				Vars: []node.Node{
 					&stmt.StaticVar{
-						Variable: &expr.Variable{VarName: &node.Identifier{Value: "$a"}},
+						Variable: &expr.Variable{VarName: &node.Identifier{Value: "a"}},
 						Expr:     &scalar.Lnumber{Value: "1"},
 					},
 					&stmt.StaticVar{
-						Variable: &expr.Variable{VarName: &node.Identifier{Value: "$b"}},
+						Variable: &expr.Variable{VarName: &node.Identifier{Value: "b"}},
 					},
 				},
 			},
 		},
 	}
 
-	actual, _, _ := php7.Parse(bytes.NewBufferString(src), "test.php")
+	php7parser := php7.NewParser(bytes.NewBufferString(src), "test.php")
+	php7parser.Parse()
+	actual := php7parser.GetRootNode()
 	assertEqual(t, expected, actual)
 
-	actual, _, _ = php5.Parse(bytes.NewBufferString(src), "test.php")
+	php5parser := php5.NewParser(bytes.NewBufferString(src), "test.php")
+	php5parser.Parse()
+	actual = php5parser.GetRootNode()
 	assertEqual(t, expected, actual)
 }

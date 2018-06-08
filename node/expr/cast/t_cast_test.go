@@ -27,202 +27,242 @@ func assertEqual(t *testing.T, expected interface{}, actual interface{}) {
 	}
 }
 
-func TestCastArray(t *testing.T) {
+func TestArray(t *testing.T) {
 	src := `<? (array)$a;`
 
-	expected := &stmt.StmtList{
+	expected := &node.Root{
 		Stmts: []node.Node{
 			&stmt.Expression{
-				Expr: &cast.CastArray{
-					Expr: &expr.Variable{VarName: &node.Identifier{Value: "$a"}},
+				Expr: &cast.Array{
+					Expr: &expr.Variable{VarName: &node.Identifier{Value: "a"}},
 				},
 			},
 		},
 	}
 
-	actual, _, _ := php7.Parse(bytes.NewBufferString(src), "test.php")
+	php7parser := php7.NewParser(bytes.NewBufferString(src), "test.php")
+	php7parser.Parse()
+	actual := php7parser.GetRootNode()
 	assertEqual(t, expected, actual)
 
-	actual, _, _ = php5.Parse(bytes.NewBufferString(src), "test.php")
+	php5parser := php5.NewParser(bytes.NewBufferString(src), "test.php")
+	php5parser.Parse()
+	actual = php5parser.GetRootNode()
 	assertEqual(t, expected, actual)
 }
 
-func TestCastBool(t *testing.T) {
+func TestBool(t *testing.T) {
 	src := `<? (boolean)$a;`
 
-	expected := &stmt.StmtList{
+	expected := &node.Root{
 		Stmts: []node.Node{
 			&stmt.Expression{
-				Expr: &cast.CastBool{
-					Expr: &expr.Variable{VarName: &node.Identifier{Value: "$a"}},
+				Expr: &cast.Bool{
+					Expr: &expr.Variable{VarName: &node.Identifier{Value: "a"}},
 				},
 			},
 		},
 	}
 
-	actual, _, _ := php7.Parse(bytes.NewBufferString(src), "test.php")
+	php7parser := php7.NewParser(bytes.NewBufferString(src), "test.php")
+	php7parser.Parse()
+	actual := php7parser.GetRootNode()
 	assertEqual(t, expected, actual)
 
-	actual, _, _ = php5.Parse(bytes.NewBufferString(src), "test.php")
+	php5parser := php5.NewParser(bytes.NewBufferString(src), "test.php")
+	php5parser.Parse()
+	actual = php5parser.GetRootNode()
 	assertEqual(t, expected, actual)
 }
 
-func TestCastBoolShort(t *testing.T) {
+func TestBoolShort(t *testing.T) {
 	src := `<? (bool)$a;`
 
-	expected := &stmt.StmtList{
+	expected := &node.Root{
 		Stmts: []node.Node{
 			&stmt.Expression{
-				Expr: &cast.CastBool{
-					Expr: &expr.Variable{VarName: &node.Identifier{Value: "$a"}},
+				Expr: &cast.Bool{
+					Expr: &expr.Variable{VarName: &node.Identifier{Value: "a"}},
 				},
 			},
 		},
 	}
 
-	actual, _, _ := php7.Parse(bytes.NewBufferString(src), "test.php")
+	php7parser := php7.NewParser(bytes.NewBufferString(src), "test.php")
+	php7parser.Parse()
+	actual := php7parser.GetRootNode()
 	assertEqual(t, expected, actual)
 
-	actual, _, _ = php5.Parse(bytes.NewBufferString(src), "test.php")
+	php5parser := php5.NewParser(bytes.NewBufferString(src), "test.php")
+	php5parser.Parse()
+	actual = php5parser.GetRootNode()
 	assertEqual(t, expected, actual)
 }
 
-func TestCastDouble(t *testing.T) {
+func TestDouble(t *testing.T) {
 	src := `<? (double)$a;`
 
-	expected := &stmt.StmtList{
+	expected := &node.Root{
 		Stmts: []node.Node{
 			&stmt.Expression{
-				Expr: &cast.CastDouble{
-					Expr: &expr.Variable{VarName: &node.Identifier{Value: "$a"}},
+				Expr: &cast.Double{
+					Expr: &expr.Variable{VarName: &node.Identifier{Value: "a"}},
 				},
 			},
 		},
 	}
 
-	actual, _, _ := php7.Parse(bytes.NewBufferString(src), "test.php")
+	php7parser := php7.NewParser(bytes.NewBufferString(src), "test.php")
+	php7parser.Parse()
+	actual := php7parser.GetRootNode()
 	assertEqual(t, expected, actual)
 
-	actual, _, _ = php5.Parse(bytes.NewBufferString(src), "test.php")
+	php5parser := php5.NewParser(bytes.NewBufferString(src), "test.php")
+	php5parser.Parse()
+	actual = php5parser.GetRootNode()
 	assertEqual(t, expected, actual)
 }
 
 func TestCastFloat(t *testing.T) {
 	src := `<? (float)$a;`
 
-	expected := &stmt.StmtList{
+	expected := &node.Root{
 		Stmts: []node.Node{
 			&stmt.Expression{
-				Expr: &cast.CastDouble{
-					Expr: &expr.Variable{VarName: &node.Identifier{Value: "$a"}},
+				Expr: &cast.Double{
+					Expr: &expr.Variable{VarName: &node.Identifier{Value: "a"}},
 				},
 			},
 		},
 	}
 
-	actual, _, _ := php7.Parse(bytes.NewBufferString(src), "test.php")
+	php7parser := php7.NewParser(bytes.NewBufferString(src), "test.php")
+	php7parser.Parse()
+	actual := php7parser.GetRootNode()
 	assertEqual(t, expected, actual)
 
-	actual, _, _ = php5.Parse(bytes.NewBufferString(src), "test.php")
+	php5parser := php5.NewParser(bytes.NewBufferString(src), "test.php")
+	php5parser.Parse()
+	actual = php5parser.GetRootNode()
 	assertEqual(t, expected, actual)
 }
 
-func TestCastInt(t *testing.T) {
+func TestInt(t *testing.T) {
 	src := `<? (integer)$a;`
 
-	expected := &stmt.StmtList{
+	expected := &node.Root{
 		Stmts: []node.Node{
 			&stmt.Expression{
-				Expr: &cast.CastInt{
-					Expr: &expr.Variable{VarName: &node.Identifier{Value: "$a"}},
+				Expr: &cast.Int{
+					Expr: &expr.Variable{VarName: &node.Identifier{Value: "a"}},
 				},
 			},
 		},
 	}
 
-	actual, _, _ := php7.Parse(bytes.NewBufferString(src), "test.php")
+	php7parser := php7.NewParser(bytes.NewBufferString(src), "test.php")
+	php7parser.Parse()
+	actual := php7parser.GetRootNode()
 	assertEqual(t, expected, actual)
 
-	actual, _, _ = php5.Parse(bytes.NewBufferString(src), "test.php")
+	php5parser := php5.NewParser(bytes.NewBufferString(src), "test.php")
+	php5parser.Parse()
+	actual = php5parser.GetRootNode()
 	assertEqual(t, expected, actual)
 }
 
-func TestCastIntShort(t *testing.T) {
+func TestIntShort(t *testing.T) {
 	src := `<? (int)$a;`
 
-	expected := &stmt.StmtList{
+	expected := &node.Root{
 		Stmts: []node.Node{
 			&stmt.Expression{
-				Expr: &cast.CastInt{
-					Expr: &expr.Variable{VarName: &node.Identifier{Value: "$a"}},
+				Expr: &cast.Int{
+					Expr: &expr.Variable{VarName: &node.Identifier{Value: "a"}},
 				},
 			},
 		},
 	}
 
-	actual, _, _ := php7.Parse(bytes.NewBufferString(src), "test.php")
+	php7parser := php7.NewParser(bytes.NewBufferString(src), "test.php")
+	php7parser.Parse()
+	actual := php7parser.GetRootNode()
 	assertEqual(t, expected, actual)
 
-	actual, _, _ = php5.Parse(bytes.NewBufferString(src), "test.php")
+	php5parser := php5.NewParser(bytes.NewBufferString(src), "test.php")
+	php5parser.Parse()
+	actual = php5parser.GetRootNode()
 	assertEqual(t, expected, actual)
 }
 
-func TestCastObject(t *testing.T) {
+func TestObject(t *testing.T) {
 	src := `<? (object)$a;`
 
-	expected := &stmt.StmtList{
+	expected := &node.Root{
 		Stmts: []node.Node{
 			&stmt.Expression{
-				Expr: &cast.CastObject{
-					Expr: &expr.Variable{VarName: &node.Identifier{Value: "$a"}},
+				Expr: &cast.Object{
+					Expr: &expr.Variable{VarName: &node.Identifier{Value: "a"}},
 				},
 			},
 		},
 	}
 
-	actual, _, _ := php7.Parse(bytes.NewBufferString(src), "test.php")
+	php7parser := php7.NewParser(bytes.NewBufferString(src), "test.php")
+	php7parser.Parse()
+	actual := php7parser.GetRootNode()
 	assertEqual(t, expected, actual)
 
-	actual, _, _ = php5.Parse(bytes.NewBufferString(src), "test.php")
+	php5parser := php5.NewParser(bytes.NewBufferString(src), "test.php")
+	php5parser.Parse()
+	actual = php5parser.GetRootNode()
 	assertEqual(t, expected, actual)
 }
 
-func TestCastString(t *testing.T) {
+func TestString(t *testing.T) {
 	src := `<? (string)$a;`
 
-	expected := &stmt.StmtList{
+	expected := &node.Root{
 		Stmts: []node.Node{
 			&stmt.Expression{
-				Expr: &cast.CastString{
-					Expr: &expr.Variable{VarName: &node.Identifier{Value: "$a"}},
+				Expr: &cast.String{
+					Expr: &expr.Variable{VarName: &node.Identifier{Value: "a"}},
 				},
 			},
 		},
 	}
 
-	actual, _, _ := php7.Parse(bytes.NewBufferString(src), "test.php")
+	php7parser := php7.NewParser(bytes.NewBufferString(src), "test.php")
+	php7parser.Parse()
+	actual := php7parser.GetRootNode()
 	assertEqual(t, expected, actual)
 
-	actual, _, _ = php5.Parse(bytes.NewBufferString(src), "test.php")
+	php5parser := php5.NewParser(bytes.NewBufferString(src), "test.php")
+	php5parser.Parse()
+	actual = php5parser.GetRootNode()
 	assertEqual(t, expected, actual)
 }
 
-func TestCastUnset(t *testing.T) {
+func TestUnset(t *testing.T) {
 	src := `<? (unset)$a;`
 
-	expected := &stmt.StmtList{
+	expected := &node.Root{
 		Stmts: []node.Node{
 			&stmt.Expression{
-				Expr: &cast.CastUnset{
-					Expr: &expr.Variable{VarName: &node.Identifier{Value: "$a"}},
+				Expr: &cast.Unset{
+					Expr: &expr.Variable{VarName: &node.Identifier{Value: "a"}},
 				},
 			},
 		},
 	}
 
-	actual, _, _ := php7.Parse(bytes.NewBufferString(src), "test.php")
+	php7parser := php7.NewParser(bytes.NewBufferString(src), "test.php")
+	php7parser.Parse()
+	actual := php7parser.GetRootNode()
 	assertEqual(t, expected, actual)
 
-	actual, _, _ = php5.Parse(bytes.NewBufferString(src), "test.php")
+	php5parser := php5.NewParser(bytes.NewBufferString(src), "test.php")
+	php5parser.Parse()
+	actual = php5parser.GetRootNode()
 	assertEqual(t, expected, actual)
 }

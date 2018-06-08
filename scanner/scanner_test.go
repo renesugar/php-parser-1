@@ -5,8 +5,11 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/z7zmey/php-parser/position"
+
+	"github.com/z7zmey/php-parser/comment"
+
 	"github.com/z7zmey/php-parser/scanner"
-	"github.com/z7zmey/php-parser/token"
 
 	"github.com/kylelemons/godebug/pretty"
 )
@@ -25,14 +28,14 @@ func assertEqual(t *testing.T, expected interface{}, actual interface{}) {
 }
 
 type lval struct {
-	token token.Token
+	Tkn *scanner.Token
 }
 
-func (lv *lval) Token(t token.Token) {
-	lv.token = t
+func (lv *lval) Token(t *scanner.Token) {
+	lv.Tkn = t
 }
 
-func TestIdentifier(t *testing.T) {
+func TestTokens(t *testing.T) {
 	src := `inline html - 
 		<? ?>
 		<?= ?>
@@ -209,36 +212,10 @@ func TestIdentifier(t *testing.T) {
 
 		'adsf\'adsf\''
 
-		` + "`test $var {$var} ${var_name} {s $ \\$a `" + `
-
-		"test $var {$var} ${var_name} {s $ \$a "
-		
-		"{$var}"
-
 		"test"
 		b"\$var $4 {a"
 
-		<<<CAT
-		test
-CAT;
-		<<<'CAT'
-		test
-CAT;
-
-		<<<"CAT"
-		$var->prop
-		$var[1]
-		$var[0x1]
-		$var[0b1]
-		$var[var_name]
-		$var[$var]
-
-		{$var}
-		${var_name}
-		{s $ \$a 
-CAT;
-
-		( array )              
+		( array )
 		( bool )
 		( boolean )
 		( real )
@@ -248,6 +225,7 @@ CAT;
 		( integer )
 		( object )
 		( string )
+		( binary )
 		( unset )
 
 	`
@@ -419,6 +397,154 @@ CAT;
 		scanner.T_STRING,
 
 		scanner.T_CONSTANT_ENCAPSED_STRING,
+		scanner.T_CONSTANT_ENCAPSED_STRING,
+		scanner.T_CONSTANT_ENCAPSED_STRING,
+
+		scanner.T_ARRAY_CAST,
+		scanner.T_BOOL_CAST,
+		scanner.T_BOOL_CAST,
+		scanner.T_DOUBLE_CAST,
+		scanner.T_DOUBLE_CAST,
+		scanner.T_DOUBLE_CAST,
+		scanner.T_INT_CAST,
+		scanner.T_INT_CAST,
+		scanner.T_OBJECT_CAST,
+		scanner.T_STRING_CAST,
+		scanner.T_STRING_CAST,
+		scanner.T_UNSET_CAST,
+	}
+
+	lexer := scanner.NewLexer(bytes.NewBufferString(src), "test.php")
+	lv := &lval{}
+	actual := []int{}
+
+	for {
+		token := lexer.Lex(lv)
+		if token < 0 {
+			break
+		}
+
+		actual = append(actual, token)
+	}
+
+	assertEqual(t, expected, actual)
+}
+
+func TestTeplateStringTokens(t *testing.T) {
+	src := `<?php
+		"foo $a"
+
+		"foo $a{$b}"
+
+		"test $var {$var} ${var_name} {s $ \$a "
+		
+		"{$var}"
+		
+		"$foo/"
+		"$foo/100;"
+
+		"$/$foo"
+		"$0$foo"
+	`
+
+	expected := []int{
+		scanner.Rune2Class('"'),
+		scanner.T_ENCAPSED_AND_WHITESPACE,
+		scanner.T_VARIABLE,
+		scanner.Rune2Class('"'),
+
+		scanner.Rune2Class('"'),
+		scanner.T_ENCAPSED_AND_WHITESPACE,
+		scanner.T_VARIABLE,
+		scanner.T_CURLY_OPEN,
+		scanner.T_VARIABLE,
+		scanner.Rune2Class('}'),
+		scanner.Rune2Class('"'),
+
+		scanner.Rune2Class('"'),
+		scanner.T_ENCAPSED_AND_WHITESPACE,
+		scanner.T_VARIABLE,
+		scanner.T_ENCAPSED_AND_WHITESPACE,
+		scanner.T_CURLY_OPEN,
+		scanner.T_VARIABLE,
+		scanner.Rune2Class('}'),
+		scanner.T_ENCAPSED_AND_WHITESPACE,
+		scanner.T_DOLLAR_OPEN_CURLY_BRACES,
+		scanner.T_STRING_VARNAME,
+		scanner.Rune2Class('}'),
+		scanner.T_ENCAPSED_AND_WHITESPACE,
+		scanner.Rune2Class('"'),
+
+		scanner.Rune2Class('"'),
+		scanner.T_CURLY_OPEN,
+		scanner.T_VARIABLE,
+		scanner.Rune2Class('}'),
+		scanner.Rune2Class('"'),
+
+		scanner.Rune2Class('"'),
+		scanner.T_VARIABLE,
+		scanner.T_ENCAPSED_AND_WHITESPACE,
+		scanner.Rune2Class('"'),
+
+		scanner.Rune2Class('"'),
+		scanner.T_VARIABLE,
+		scanner.T_ENCAPSED_AND_WHITESPACE,
+		scanner.Rune2Class('"'),
+
+		scanner.Rune2Class('"'),
+		scanner.T_ENCAPSED_AND_WHITESPACE,
+		scanner.T_VARIABLE,
+		scanner.Rune2Class('"'),
+
+		scanner.Rune2Class('"'),
+		scanner.T_ENCAPSED_AND_WHITESPACE,
+		scanner.T_VARIABLE,
+		scanner.Rune2Class('"'),
+	}
+
+	lexer := scanner.NewLexer(bytes.NewBufferString(src), "test.php")
+	lv := &lval{}
+	actual := []int{}
+
+	for {
+		token := lexer.Lex(lv)
+		if token < 0 {
+			break
+		}
+
+		actual = append(actual, token)
+	}
+
+	assertEqual(t, expected, actual)
+}
+
+func TestBackquoteStringTokens(t *testing.T) {
+	src := `<?php
+		` + "`foo $a`" + `
+		` + "`foo $a{$b}`" + `
+
+		` + "`test $var {$var} ${var_name} {s $ \\$a `" + `
+		
+		` + "`{$var}`" + `
+		` + "`$foo/`" + `
+		` + "`$foo/100`" + `
+		` + "`$/$foo`" + `
+		` + "`$0$foo`" + `
+	`
+
+	expected := []int{
+		scanner.Rune2Class('`'),
+		scanner.T_ENCAPSED_AND_WHITESPACE,
+		scanner.T_VARIABLE,
+		scanner.Rune2Class('`'),
+
+		scanner.Rune2Class('`'),
+		scanner.T_ENCAPSED_AND_WHITESPACE,
+		scanner.T_VARIABLE,
+		scanner.T_CURLY_OPEN,
+		scanner.T_VARIABLE,
+		scanner.Rune2Class('}'),
+		scanner.Rune2Class('`'),
 
 		scanner.Rune2Class('`'),
 		scanner.T_ENCAPSED_AND_WHITESPACE,
@@ -434,33 +560,79 @@ CAT;
 		scanner.T_ENCAPSED_AND_WHITESPACE,
 		scanner.Rune2Class('`'),
 
-		scanner.Rune2Class('"'),
-		scanner.T_ENCAPSED_AND_WHITESPACE,
-		scanner.T_VARIABLE,
-		scanner.T_ENCAPSED_AND_WHITESPACE,
+		scanner.Rune2Class('`'),
 		scanner.T_CURLY_OPEN,
 		scanner.T_VARIABLE,
 		scanner.Rune2Class('}'),
-		scanner.T_ENCAPSED_AND_WHITESPACE,
-		scanner.T_DOLLAR_OPEN_CURLY_BRACES,
-		scanner.T_STRING_VARNAME,
-		scanner.Rune2Class('}'),
-		scanner.T_ENCAPSED_AND_WHITESPACE,
-		scanner.Rune2Class('"'),
+		scanner.Rune2Class('`'),
 
-		scanner.Rune2Class('"'),
-		scanner.T_CURLY_OPEN,
+		scanner.Rune2Class('`'),
 		scanner.T_VARIABLE,
-		scanner.Rune2Class('}'),
-		scanner.Rune2Class('"'),
+		scanner.T_ENCAPSED_AND_WHITESPACE,
+		scanner.Rune2Class('`'),
 
-		scanner.T_CONSTANT_ENCAPSED_STRING,
-		scanner.T_CONSTANT_ENCAPSED_STRING,
+		scanner.Rune2Class('`'),
+		scanner.T_VARIABLE,
+		scanner.T_ENCAPSED_AND_WHITESPACE,
+		scanner.Rune2Class('`'),
 
+		scanner.Rune2Class('`'),
+		scanner.T_ENCAPSED_AND_WHITESPACE,
+		scanner.T_VARIABLE,
+		scanner.Rune2Class('`'),
+
+		scanner.Rune2Class('`'),
+		scanner.T_ENCAPSED_AND_WHITESPACE,
+		scanner.T_VARIABLE,
+		scanner.Rune2Class('`'),
+	}
+
+	lexer := scanner.NewLexer(bytes.NewBufferString(src), "test.php")
+	lv := &lval{}
+	actual := []int{}
+
+	for {
+		token := lexer.Lex(lv)
+		if token < 0 {
+			break
+		}
+
+		actual = append(actual, token)
+	}
+
+	assertEqual(t, expected, actual)
+}
+
+func TestHereDocTokens(t *testing.T) {
+	src := `<?php
+	<<<CAT
+	test
+CAT;
+
+	<<<'CAT'
+	test
+CAT;
+
+	<<<"CAT"
+	$var->prop
+	$var[1]
+	$var[0x1]
+	$var[0b1]
+	$var[var_name]
+	$var[$var]
+
+	{$var}
+	${var_name}
+	{s $ \$a 
+CAT;
+	`
+
+	expected := []int{
 		scanner.T_START_HEREDOC,
 		scanner.T_ENCAPSED_AND_WHITESPACE,
 		scanner.T_END_HEREDOC,
 		scanner.Rune2Class(';'),
+
 		scanner.T_START_HEREDOC,
 		scanner.T_ENCAPSED_AND_WHITESPACE,
 		scanner.T_END_HEREDOC,
@@ -496,9 +668,7 @@ CAT;
 		scanner.Rune2Class('['),
 		scanner.T_VARIABLE,
 		scanner.Rune2Class(']'),
-		scanner.T_ENCAPSED_AND_WHITESPACE,
-
-		scanner.T_CURLY_OPEN,
+		scanner.T_ENCAPSED_AND_WHITESPACE, scanner.T_CURLY_OPEN,
 		scanner.T_VARIABLE,
 		scanner.Rune2Class('}'),
 		scanner.T_ENCAPSED_AND_WHITESPACE,
@@ -506,21 +676,8 @@ CAT;
 		scanner.T_STRING_VARNAME,
 		scanner.Rune2Class('}'),
 		scanner.T_ENCAPSED_AND_WHITESPACE,
-
 		scanner.T_END_HEREDOC,
 		scanner.Rune2Class(';'),
-
-		scanner.T_ARRAY_CAST,
-		scanner.T_BOOL_CAST,
-		scanner.T_BOOL_CAST,
-		scanner.T_DOUBLE_CAST,
-		scanner.T_DOUBLE_CAST,
-		scanner.T_DOUBLE_CAST,
-		scanner.T_INT_CAST,
-		scanner.T_INT_CAST,
-		scanner.T_OBJECT_CAST,
-		scanner.T_STRING_CAST,
-		scanner.T_UNSET_CAST,
 	}
 
 	lexer := scanner.NewLexer(bytes.NewBufferString(src), "test.php")
@@ -535,6 +692,323 @@ CAT;
 
 		actual = append(actual, token)
 	}
+
+	assertEqual(t, expected, actual)
+}
+
+func TestHereDocTokens2(t *testing.T) {
+	src := `<?php
+	<<<CAT
+$foo/
+CAT;
+
+	<<<CAT
+$foo/100
+CAT;
+
+	<<<CAT
+$/$foo
+CAT;
+
+	<<<CAT
+$0$foo
+CAT;
+
+	<<<CAT
+$foo$bar\
+CAT
+`
+
+	expected := []int{
+		scanner.T_START_HEREDOC,
+		scanner.T_VARIABLE,
+		scanner.T_ENCAPSED_AND_WHITESPACE,
+		scanner.T_END_HEREDOC,
+		scanner.Rune2Class(';'),
+
+		scanner.T_START_HEREDOC,
+		scanner.T_VARIABLE,
+		scanner.T_ENCAPSED_AND_WHITESPACE,
+		scanner.T_END_HEREDOC,
+		scanner.Rune2Class(';'),
+
+		scanner.T_START_HEREDOC,
+		scanner.T_ENCAPSED_AND_WHITESPACE,
+		scanner.T_VARIABLE,
+		scanner.T_ENCAPSED_AND_WHITESPACE,
+		scanner.T_END_HEREDOC,
+		scanner.Rune2Class(';'),
+
+		scanner.T_START_HEREDOC,
+		scanner.T_ENCAPSED_AND_WHITESPACE,
+		scanner.T_VARIABLE,
+		scanner.T_ENCAPSED_AND_WHITESPACE,
+		scanner.T_END_HEREDOC,
+		scanner.Rune2Class(';'),
+
+		scanner.T_START_HEREDOC,
+		scanner.T_VARIABLE,
+		scanner.T_VARIABLE,
+		scanner.T_ENCAPSED_AND_WHITESPACE,
+		scanner.T_END_HEREDOC,
+	}
+
+	lexer := scanner.NewLexer(bytes.NewBufferString(src), "test.php")
+	lv := &lval{}
+	actual := []int{}
+
+	for {
+		token := lexer.Lex(lv)
+		if token < 0 {
+			break
+		}
+
+		actual = append(actual, token)
+	}
+
+	assertEqual(t, expected, actual)
+}
+
+func TestInlineHtmlNopTokens(t *testing.T) {
+	src := `<?php
+		$a; ?> test <?php
+		$a ?> test
+	`
+
+	expected := []int{
+		scanner.T_VARIABLE,
+		scanner.Rune2Class(';'),
+		scanner.T_INLINE_HTML,
+
+		scanner.T_VARIABLE,
+		scanner.Rune2Class(';'),
+		scanner.T_INLINE_HTML,
+	}
+
+	lexer := scanner.NewLexer(bytes.NewBufferString(src), "test.php")
+	lv := &lval{}
+	actual := []int{}
+
+	for {
+		token := lexer.Lex(lv)
+		if token < 0 {
+			break
+		}
+
+		actual = append(actual, token)
+	}
+
+	assertEqual(t, expected, actual)
+}
+
+func TestStringTokensAfterVariable(t *testing.T) {
+	src := `<?php "test \"$var\""`
+
+	expected := []int{
+		scanner.Rune2Class('"'),
+		scanner.T_ENCAPSED_AND_WHITESPACE,
+		scanner.T_VARIABLE,
+		scanner.T_ENCAPSED_AND_WHITESPACE,
+		scanner.Rune2Class('"'),
+	}
+
+	expectedTokens := []string{
+		"\"",
+		"test \\\"",
+		"$var",
+		"\\\"",
+		"\"",
+	}
+
+	lexer := scanner.NewLexer(bytes.NewBufferString(src), "test.php")
+	lv := &lval{}
+	actual := []int{}
+	actualTokens := []string{}
+
+	for {
+		token := lexer.Lex(lv)
+		if token < 0 {
+			break
+		}
+
+		actualTokens = append(actualTokens, lv.Tkn.Value)
+		actual = append(actual, token)
+	}
+
+	assertEqual(t, expected, actual)
+	assertEqual(t, expectedTokens, actualTokens)
+}
+
+func TestSlashAfterVariable(t *testing.T) {
+	src := `<?php $foo/3`
+
+	expected := []int{
+		scanner.T_VARIABLE,
+		scanner.Rune2Class('/'),
+		scanner.T_LNUMBER,
+	}
+
+	expectedTokens := []string{
+		"$foo",
+		"/",
+		"3",
+	}
+
+	lexer := scanner.NewLexer(bytes.NewBufferString(src), "test.php")
+	lv := &lval{}
+	actual := []int{}
+	actualTokens := []string{}
+
+	for {
+		token := lexer.Lex(lv)
+		if token < 0 {
+			break
+		}
+
+		actualTokens = append(actualTokens, lv.Tkn.Value)
+		actual = append(actual, token)
+	}
+
+	assertEqual(t, expected, actual)
+	assertEqual(t, expectedTokens, actualTokens)
+}
+
+func TestCommentEnd(t *testing.T) {
+	src := `<?php //test`
+
+	expected := []*comment.Comment{
+		comment.NewComment("//test", position.NewPosition(1, 1, 7, 12)),
+	}
+
+	lexer := scanner.NewLexer(bytes.NewBufferString(src), "test.php")
+	lv := &lval{}
+
+	lexer.Lex(lv)
+
+	actual := lexer.Comments
+
+	assertEqual(t, expected, actual)
+}
+
+func TestCommentNewLine(t *testing.T) {
+	src := "<?php //test\n$a"
+
+	expected := []*comment.Comment{
+		comment.NewComment("//test\n", position.NewPosition(1, 1, 7, 13)),
+	}
+
+	lexer := scanner.NewLexer(bytes.NewBufferString(src), "test.php")
+	lv := &lval{}
+
+	lexer.Lex(lv)
+
+	actual := lexer.Comments
+
+	assertEqual(t, expected, actual)
+}
+
+func TestCommentNewLine1(t *testing.T) {
+	src := "<?php //test\r$a"
+
+	expected := []*comment.Comment{
+		comment.NewComment("//test\r", position.NewPosition(1, 1, 7, 13)),
+	}
+
+	lexer := scanner.NewLexer(bytes.NewBufferString(src), "test.php")
+	lv := &lval{}
+
+	lexer.Lex(lv)
+
+	actual := lexer.Comments
+
+	assertEqual(t, expected, actual)
+}
+
+func TestCommentNewLine2(t *testing.T) {
+	src := "<?php #test\r\n$a"
+
+	expected := []*comment.Comment{
+		comment.NewComment("#test\r\n", position.NewPosition(1, 1, 7, 13)),
+	}
+
+	lexer := scanner.NewLexer(bytes.NewBufferString(src), "test.php")
+	lv := &lval{}
+
+	lexer.Lex(lv)
+
+	actual := lexer.Comments
+
+	assertEqual(t, expected, actual)
+}
+
+func TestCommentWithPhpEndTag(t *testing.T) {
+	src := `<?php
+	//test?> test`
+
+	expected := []*comment.Comment{
+		comment.NewComment("//test", position.NewPosition(2, 2, 8, 13)),
+	}
+
+	lexer := scanner.NewLexer(bytes.NewBufferString(src), "test.php")
+	lv := &lval{}
+
+	lexer.Lex(lv)
+
+	actual := lexer.Comments
+
+	assertEqual(t, expected, actual)
+}
+
+func TestInlineComment(t *testing.T) {
+	src := `<?php
+	/*test*/`
+
+	expected := []*comment.Comment{
+		comment.NewComment("/*test*/", position.NewPosition(2, 2, 8, 15)),
+	}
+
+	lexer := scanner.NewLexer(bytes.NewBufferString(src), "test.php")
+	lv := &lval{}
+
+	lexer.Lex(lv)
+
+	actual := lexer.Comments
+
+	assertEqual(t, expected, actual)
+}
+
+func TestEmptyInlineComment(t *testing.T) {
+	src := `<?php
+	/**/`
+
+	expected := []*comment.Comment{
+		comment.NewComment("/**/", position.NewPosition(2, 2, 8, 11)),
+	}
+
+	lexer := scanner.NewLexer(bytes.NewBufferString(src), "test.php")
+	lv := &lval{}
+
+	lexer.Lex(lv)
+
+	actual := lexer.Comments
+
+	assertEqual(t, expected, actual)
+}
+
+func TestEmptyInlineComment2(t *testing.T) {
+	src := `<?php
+	/***/`
+
+	expected := []*comment.Comment{
+		comment.NewComment("/***/", position.NewPosition(2, 2, 8, 12)),
+	}
+
+	lexer := scanner.NewLexer(bytes.NewBufferString(src), "test.php")
+	lv := &lval{}
+
+	lexer.Lex(lv)
+
+	actual := lexer.Comments
 
 	assertEqual(t, expected, actual)
 }

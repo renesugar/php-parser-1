@@ -15,7 +15,7 @@ import (
 func TestProperty(t *testing.T) {
 	src := `<? class foo {var $a;}`
 
-	expected := &stmt.StmtList{
+	expected := &node.Root{
 		Stmts: []node.Node{
 			&stmt.Class{
 				ClassName: &node.Identifier{Value: "foo"},
@@ -27,7 +27,7 @@ func TestProperty(t *testing.T) {
 						Properties: []node.Node{
 							&stmt.Property{
 								PhpDocComment: "",
-								Variable:      &expr.Variable{VarName: &node.Identifier{Value: "$a"}},
+								Variable:      &expr.Variable{VarName: &node.Identifier{Value: "a"}},
 							},
 						},
 					},
@@ -36,17 +36,21 @@ func TestProperty(t *testing.T) {
 		},
 	}
 
-	actual, _, _ := php7.Parse(bytes.NewBufferString(src), "test.php")
+	php7parser := php7.NewParser(bytes.NewBufferString(src), "test.php")
+	php7parser.Parse()
+	actual := php7parser.GetRootNode()
 	assertEqual(t, expected, actual)
 
-	actual, _, _ = php5.Parse(bytes.NewBufferString(src), "test.php")
+	php5parser := php5.NewParser(bytes.NewBufferString(src), "test.php")
+	php5parser.Parse()
+	actual = php5parser.GetRootNode()
 	assertEqual(t, expected, actual)
 }
 
 func TestProperties(t *testing.T) {
 	src := `<? class foo {public static $a, $b = 1;}`
 
-	expected := &stmt.StmtList{
+	expected := &node.Root{
 		Stmts: []node.Node{
 			&stmt.Class{
 				ClassName: &node.Identifier{Value: "foo"},
@@ -59,11 +63,11 @@ func TestProperties(t *testing.T) {
 						Properties: []node.Node{
 							&stmt.Property{
 								PhpDocComment: "",
-								Variable:      &expr.Variable{VarName: &node.Identifier{Value: "$a"}},
+								Variable:      &expr.Variable{VarName: &node.Identifier{Value: "a"}},
 							},
 							&stmt.Property{
 								PhpDocComment: "",
-								Variable:      &expr.Variable{VarName: &node.Identifier{Value: "$b"}},
+								Variable:      &expr.Variable{VarName: &node.Identifier{Value: "b"}},
 								Expr:          &scalar.Lnumber{Value: "1"},
 							},
 						},
@@ -73,17 +77,21 @@ func TestProperties(t *testing.T) {
 		},
 	}
 
-	actual, _, _ := php7.Parse(bytes.NewBufferString(src), "test.php")
+	php7parser := php7.NewParser(bytes.NewBufferString(src), "test.php")
+	php7parser.Parse()
+	actual := php7parser.GetRootNode()
 	assertEqual(t, expected, actual)
 
-	actual, _, _ = php5.Parse(bytes.NewBufferString(src), "test.php")
+	php5parser := php5.NewParser(bytes.NewBufferString(src), "test.php")
+	php5parser.Parse()
+	actual = php5parser.GetRootNode()
 	assertEqual(t, expected, actual)
 }
 
 func TestProperties2(t *testing.T) {
 	src := `<? class foo {public static $a = 1, $b;}`
 
-	expected := &stmt.StmtList{
+	expected := &node.Root{
 		Stmts: []node.Node{
 			&stmt.Class{
 				ClassName: &node.Identifier{Value: "foo"},
@@ -96,12 +104,12 @@ func TestProperties2(t *testing.T) {
 						Properties: []node.Node{
 							&stmt.Property{
 								PhpDocComment: "",
-								Variable:      &expr.Variable{VarName: &node.Identifier{Value: "$a"}},
+								Variable:      &expr.Variable{VarName: &node.Identifier{Value: "a"}},
 								Expr:          &scalar.Lnumber{Value: "1"},
 							},
 							&stmt.Property{
 								PhpDocComment: "",
-								Variable:      &expr.Variable{VarName: &node.Identifier{Value: "$b"}},
+								Variable:      &expr.Variable{VarName: &node.Identifier{Value: "b"}},
 							},
 						},
 					},
@@ -110,9 +118,13 @@ func TestProperties2(t *testing.T) {
 		},
 	}
 
-	actual, _, _ := php7.Parse(bytes.NewBufferString(src), "test.php")
+	php7parser := php7.NewParser(bytes.NewBufferString(src), "test.php")
+	php7parser.Parse()
+	actual := php7parser.GetRootNode()
 	assertEqual(t, expected, actual)
 
-	actual, _, _ = php5.Parse(bytes.NewBufferString(src), "test.php")
+	php5parser := php5.NewParser(bytes.NewBufferString(src), "test.php")
+	php5parser.Parse()
+	actual = php5parser.GetRootNode()
 	assertEqual(t, expected, actual)
 }

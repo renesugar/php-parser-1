@@ -14,7 +14,7 @@ import (
 func TestDoubleQuotedScalarString(t *testing.T) {
 	src := `<? "test";`
 
-	expected := &stmt.StmtList{
+	expected := &node.Root{
 		Stmts: []node.Node{
 			&stmt.Expression{
 				Expr: &scalar.String{Value: "\"test\""},
@@ -22,16 +22,20 @@ func TestDoubleQuotedScalarString(t *testing.T) {
 		},
 	}
 
-	actual, _, _ := php7.Parse(bytes.NewBufferString(src), "test.php")
+	php7parser := php7.NewParser(bytes.NewBufferString(src), "test.php")
+	php7parser.Parse()
+	actual := php7parser.GetRootNode()
 	assertEqual(t, expected, actual)
 
-	actual, _, _ = php5.Parse(bytes.NewBufferString(src), "test.php")
+	php5parser := php5.NewParser(bytes.NewBufferString(src), "test.php")
+	php5parser.Parse()
+	actual = php5parser.GetRootNode()
 	assertEqual(t, expected, actual)
 }
 func TestDoubleQuotedScalarStringWithEscapedVar(t *testing.T) {
 	src := `<? "\$test";`
 
-	expected := &stmt.StmtList{
+	expected := &node.Root{
 		Stmts: []node.Node{
 			&stmt.Expression{
 				Expr: &scalar.String{Value: "\"\\$test\""},
@@ -39,10 +43,14 @@ func TestDoubleQuotedScalarStringWithEscapedVar(t *testing.T) {
 		},
 	}
 
-	actual, _, _ := php7.Parse(bytes.NewBufferString(src), "test.php")
+	php7parser := php7.NewParser(bytes.NewBufferString(src), "test.php")
+	php7parser.Parse()
+	actual := php7parser.GetRootNode()
 	assertEqual(t, expected, actual)
 
-	actual, _, _ = php5.Parse(bytes.NewBufferString(src), "test.php")
+	php5parser := php5.NewParser(bytes.NewBufferString(src), "test.php")
+	php5parser.Parse()
+	actual = php5parser.GetRootNode()
 	assertEqual(t, expected, actual)
 }
 
@@ -51,7 +59,7 @@ func TestMultilineDoubleQuotedScalarString(t *testing.T) {
 	test
 	";`
 
-	expected := &stmt.StmtList{
+	expected := &node.Root{
 		Stmts: []node.Node{
 			&stmt.Expression{
 				Expr: &scalar.String{Value: "\"\n\ttest\n\t\""},
@@ -59,17 +67,21 @@ func TestMultilineDoubleQuotedScalarString(t *testing.T) {
 		},
 	}
 
-	actual, _, _ := php7.Parse(bytes.NewBufferString(src), "test.php")
+	php7parser := php7.NewParser(bytes.NewBufferString(src), "test.php")
+	php7parser.Parse()
+	actual := php7parser.GetRootNode()
 	assertEqual(t, expected, actual)
 
-	actual, _, _ = php5.Parse(bytes.NewBufferString(src), "test.php")
+	php5parser := php5.NewParser(bytes.NewBufferString(src), "test.php")
+	php5parser.Parse()
+	actual = php5parser.GetRootNode()
 	assertEqual(t, expected, actual)
 }
 
 func TestSingleQuotedScalarString(t *testing.T) {
 	src := `<? '$test';`
 
-	expected := &stmt.StmtList{
+	expected := &node.Root{
 		Stmts: []node.Node{
 			&stmt.Expression{
 				Expr: &scalar.String{Value: "'$test'"},
@@ -77,10 +89,14 @@ func TestSingleQuotedScalarString(t *testing.T) {
 		},
 	}
 
-	actual, _, _ := php7.Parse(bytes.NewBufferString(src), "test.php")
+	php7parser := php7.NewParser(bytes.NewBufferString(src), "test.php")
+	php7parser.Parse()
+	actual := php7parser.GetRootNode()
 	assertEqual(t, expected, actual)
 
-	actual, _, _ = php5.Parse(bytes.NewBufferString(src), "test.php")
+	php5parser := php5.NewParser(bytes.NewBufferString(src), "test.php")
+	php5parser.Parse()
+	actual = php5parser.GetRootNode()
 	assertEqual(t, expected, actual)
 }
 
@@ -89,7 +105,7 @@ func TestMultilineSingleQuotedScalarString(t *testing.T) {
 	$test
 	';`
 
-	expected := &stmt.StmtList{
+	expected := &node.Root{
 		Stmts: []node.Node{
 			&stmt.Expression{
 				Expr: &scalar.String{Value: "'\n\t$test\n\t'"},
@@ -97,92 +113,13 @@ func TestMultilineSingleQuotedScalarString(t *testing.T) {
 		},
 	}
 
-	actual, _, _ := php7.Parse(bytes.NewBufferString(src), "test.php")
+	php7parser := php7.NewParser(bytes.NewBufferString(src), "test.php")
+	php7parser.Parse()
+	actual := php7parser.GetRootNode()
 	assertEqual(t, expected, actual)
 
-	actual, _, _ = php5.Parse(bytes.NewBufferString(src), "test.php")
-	assertEqual(t, expected, actual)
-}
-
-func TestPlainHeredocEmptyString(t *testing.T) {
-	src := `<? <<<CAD
-CAD;
-`
-
-	expected := &stmt.StmtList{
-		Stmts: []node.Node{
-			&stmt.Expression{
-				Expr: &scalar.Encapsed{},
-			},
-		},
-	}
-
-	actual, _, _ := php7.Parse(bytes.NewBufferString(src), "test.php")
-	assertEqual(t, expected, actual)
-
-	actual, _, _ = php5.Parse(bytes.NewBufferString(src), "test.php")
-	assertEqual(t, expected, actual)
-}
-
-func TestPlainHeredocScalarString(t *testing.T) {
-	src := `<? <<<CAD
-	hello
-CAD;
-`
-
-	expected := &stmt.StmtList{
-		Stmts: []node.Node{
-			&stmt.Expression{
-				Expr: &scalar.String{Value: "\thello\n"},
-			},
-		},
-	}
-
-	actual, _, _ := php7.Parse(bytes.NewBufferString(src), "test.php")
-	assertEqual(t, expected, actual)
-
-	actual, _, _ = php5.Parse(bytes.NewBufferString(src), "test.php")
-	assertEqual(t, expected, actual)
-}
-
-func TestHeredocScalarString(t *testing.T) {
-	src := `<? <<<"CAD"
-	hello
-CAD;
-`
-
-	expected := &stmt.StmtList{
-		Stmts: []node.Node{
-			&stmt.Expression{
-				Expr: &scalar.String{Value: "\thello\n"},
-			},
-		},
-	}
-
-	actual, _, _ := php7.Parse(bytes.NewBufferString(src), "test.php")
-	assertEqual(t, expected, actual)
-
-	actual, _, _ = php5.Parse(bytes.NewBufferString(src), "test.php")
-	assertEqual(t, expected, actual)
-}
-
-func TestNowdocScalarString(t *testing.T) {
-	src := `<? <<<'CAD'
-	hello $world
-CAD;
-`
-
-	expected := &stmt.StmtList{
-		Stmts: []node.Node{
-			&stmt.Expression{
-				Expr: &scalar.String{Value: "\thello $world\n"},
-			},
-		},
-	}
-
-	actual, _, _ := php7.Parse(bytes.NewBufferString(src), "test.php")
-	assertEqual(t, expected, actual)
-
-	actual, _, _ = php5.Parse(bytes.NewBufferString(src), "test.php")
+	php5parser := php5.NewParser(bytes.NewBufferString(src), "test.php")
+	php5parser.Parse()
+	actual = php5parser.GetRootNode()
 	assertEqual(t, expected, actual)
 }
