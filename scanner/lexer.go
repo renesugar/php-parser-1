@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"go/token"
 	"io"
+	"sync"
 	"unicode"
 
 	"github.com/z7zmey/php-parser/position"
@@ -443,6 +444,8 @@ type Lexer struct {
 	Comments      []*comment.Comment
 	heredocLabel  string
 	tokenBytesBuf *bytes.Buffer
+	TokenPool     sync.Pool
+	PositionPool  sync.Pool
 }
 
 // Rune2Class returns the rune integer id
@@ -470,7 +473,21 @@ func NewLexer(src io.Reader, fName string) *Lexer {
 	if err != nil {
 		panic(err)
 	}
-	return &Lexer{lx, []int{0}, "", nil, "", &bytes.Buffer{}}
+
+	return &Lexer{
+		Lexer:         lx,
+		StateStack:    []int{0},
+		PhpDocComment: "",
+		Comments:      nil,
+		heredocLabel:  "",
+		tokenBytesBuf: &bytes.Buffer{},
+		TokenPool: sync.Pool{
+			New: func() interface{} { return &Token{} },
+		},
+		PositionPool: sync.Pool{
+			New: func() interface{} { return &position.Position{} },
+		},
+	}
 }
 
 func (l *Lexer) ungetChars(n int) []lex.Char {
@@ -516,14 +533,19 @@ func (l *Lexer) createToken(chars []lex.Char) *Token {
 	firstChar := chars[0]
 	lastChar := chars[len(chars)-1]
 
-	pos := position.NewPosition(
-		l.File.Line(firstChar.Pos()),
-		l.File.Line(lastChar.Pos()),
-		int(firstChar.Pos()),
-		int(lastChar.Pos()),
-	)
+	pos := l.PositionPool.Get().(*position.Position)
 
-	return NewToken(l.tokenString(chars), pos).SetComments(l.Comments)
+	pos.StartLine = l.File.Line(firstChar.Pos())
+	pos.EndLine = l.File.Line(lastChar.Pos())
+	pos.StartPos = int(firstChar.Pos())
+	pos.EndPos = int(lastChar.Pos())
+
+	token := l.TokenPool.Get().(*Token)
+	token.Position = pos
+	token.Comments = l.Comments
+	token.Value = l.tokenString(chars)
+
+	return token
 }
 
 func (l *Lexer) addComment(chars []lex.Char) {

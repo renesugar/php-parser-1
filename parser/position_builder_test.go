@@ -1,6 +1,7 @@
 package parser_test
 
 import (
+	"sync"
 	"testing"
 
 	"github.com/z7zmey/php-parser/node"
@@ -11,10 +12,17 @@ import (
 )
 
 func TestNewTokenPosition(t *testing.T) {
-	builder := parser.PositionBuilder{}
+	builder := parser.PositionBuilder{
+		PositionPool: &sync.Pool{
+			New: func() interface{} { return &position.Position{} },
+		},
+	}
 
 	tpos := position.NewPosition(1, 1, 0, 3)
-	tkn := scanner.NewToken(`foo`, tpos)
+	tkn := &scanner.Token{
+		Value:    `foo`,
+		Position: tpos,
+	}
 
 	pos := builder.NewTokenPosition(tkn)
 
@@ -24,12 +32,22 @@ func TestNewTokenPosition(t *testing.T) {
 }
 
 func TestNewTokensPosition(t *testing.T) {
-	builder := parser.PositionBuilder{}
+	builder := parser.PositionBuilder{
+		PositionPool: &sync.Pool{
+			New: func() interface{} { return &position.Position{} },
+		},
+	}
 
 	tpos1 := position.NewPosition(1, 1, 0, 3)
-	token1 := scanner.NewToken(`foo`, tpos1)
+	token1 := &scanner.Token{
+		Value:    `foo`,
+		Position: tpos1,
+	}
 	tpos2 := position.NewPosition(2, 2, 4, 6)
-	token2 := scanner.NewToken(`foo`, tpos2)
+	token2 := &scanner.Token{
+		Value:    `foo`,
+		Position: tpos2,
+	}
 
 	pos := builder.NewTokensPosition(token1, token2)
 
@@ -51,6 +69,9 @@ func TestNewNodePosition(t *testing.T) {
 
 	builder := parser.PositionBuilder{
 		Positions: p,
+		PositionPool: &sync.Pool{
+			New: func() interface{} { return &position.Position{} },
+		},
 	}
 
 	pos := builder.NewNodePosition(n)
@@ -62,7 +83,10 @@ func TestNewNodePosition(t *testing.T) {
 
 func TestNewTokenNodePosition(t *testing.T) {
 	tpos := position.NewPosition(1, 1, 0, 3)
-	tkn := scanner.NewToken(`foo`, tpos)
+	tkn := &scanner.Token{
+		Value:    `foo`,
+		Position: tpos,
+	}
 	n := node.NewIdentifier("test node")
 
 	p := &parser.Positions{}
@@ -75,6 +99,9 @@ func TestNewTokenNodePosition(t *testing.T) {
 
 	builder := parser.PositionBuilder{
 		Positions: p,
+		PositionPool: &sync.Pool{
+			New: func() interface{} { return &position.Position{} },
+		},
 	}
 
 	pos := builder.NewTokenNodePosition(tkn, n)
@@ -87,7 +114,10 @@ func TestNewTokenNodePosition(t *testing.T) {
 func TestNewNodeTokenPosition(t *testing.T) {
 	n := node.NewIdentifier("test node")
 	tpos := position.NewPosition(2, 2, 10, 12)
-	tkn := scanner.NewToken(`foo`, tpos)
+	tkn := &scanner.Token{
+		Value:    `foo`,
+		Position: tpos,
+	}
 
 	p := &parser.Positions{}
 	p.AddPosition(n, &position.Position{
@@ -99,6 +129,9 @@ func TestNewNodeTokenPosition(t *testing.T) {
 
 	builder := parser.PositionBuilder{
 		Positions: p,
+		PositionPool: &sync.Pool{
+			New: func() interface{} { return &position.Position{} },
+		},
 	}
 
 	pos := builder.NewNodeTokenPosition(n, tkn)
@@ -126,6 +159,9 @@ func TestNewNodeListPosition(t *testing.T) {
 				StartPos:  10,
 				EndPos:    19,
 			},
+		},
+		PositionPool: &sync.Pool{
+			New: func() interface{} { return &position.Position{} },
 		},
 	}
 
@@ -155,6 +191,9 @@ func TestNewNodesPosition(t *testing.T) {
 				EndPos:    19,
 			},
 		},
+		PositionPool: &sync.Pool{
+			New: func() interface{} { return &position.Position{} },
+		},
 	}
 
 	pos := builder.NewNodesPosition(n1, n2)
@@ -168,7 +207,10 @@ func TestNewNodeListTokenPosition(t *testing.T) {
 	n1 := node.NewIdentifier("test node")
 	n2 := node.NewIdentifier("test node")
 	tpos := position.NewPosition(3, 3, 20, 22)
-	tkn := scanner.NewToken(`foo`, tpos)
+	tkn := &scanner.Token{
+		Value:    `foo`,
+		Position: tpos,
+	}
 
 	builder := parser.PositionBuilder{
 		Positions: &parser.Positions{
@@ -185,6 +227,9 @@ func TestNewNodeListTokenPosition(t *testing.T) {
 				EndPos:    19,
 			},
 		},
+		PositionPool: &sync.Pool{
+			New: func() interface{} { return &position.Position{} },
+		},
 	}
 
 	pos := builder.NewNodeListTokenPosition([]node.Node{n1, n2}, tkn)
@@ -196,7 +241,10 @@ func TestNewNodeListTokenPosition(t *testing.T) {
 
 func TestNewTokenNodeListPosition(t *testing.T) {
 	tpos := position.NewPosition(1, 1, 0, 2)
-	tkn := scanner.NewToken(`foo`, tpos)
+	tkn := &scanner.Token{
+		Value:    `foo`,
+		Position: tpos,
+	}
 	n1 := node.NewIdentifier("test node")
 	n2 := node.NewIdentifier("test node")
 
@@ -214,6 +262,9 @@ func TestNewTokenNodeListPosition(t *testing.T) {
 				StartPos:  11,
 				EndPos:    20,
 			},
+		},
+		PositionPool: &sync.Pool{
+			New: func() interface{} { return &position.Position{} },
 		},
 	}
 
@@ -250,6 +301,9 @@ func TestNewNodeNodeListPosition(t *testing.T) {
 				EndPos:    26,
 			},
 		},
+		PositionPool: &sync.Pool{
+			New: func() interface{} { return &position.Position{} },
+		},
 	}
 
 	pos := builder.NewNodeNodeListPosition(n1, []node.Node{n2, n3})
@@ -285,6 +339,9 @@ func TestNewNodeListNodePosition(t *testing.T) {
 				EndPos:    26,
 			},
 		},
+		PositionPool: &sync.Pool{
+			New: func() interface{} { return &position.Position{} },
+		},
 	}
 
 	pos := builder.NewNodeListNodePosition([]node.Node{n1, n2}, n3)
@@ -295,12 +352,22 @@ func TestNewNodeListNodePosition(t *testing.T) {
 }
 
 func TestNewOptionalListTokensPosition(t *testing.T) {
-	builder := parser.PositionBuilder{}
+	builder := parser.PositionBuilder{
+		PositionPool: &sync.Pool{
+			New: func() interface{} { return &position.Position{} },
+		},
+	}
 
 	tpos1 := position.NewPosition(1, 1, 0, 3)
-	token1 := scanner.NewToken(`foo`, tpos1)
+	token1 := &scanner.Token{
+		Value:    `foo`,
+		Position: tpos1,
+	}
 	tpos2 := position.NewPosition(2, 2, 4, 6)
-	token2 := scanner.NewToken(`foo`, tpos2)
+	token2 := &scanner.Token{
+		Value:    `foo`,
+		Position: tpos2,
+	}
 
 	pos := builder.NewOptionalListTokensPosition(nil, token1, token2)
 
@@ -335,12 +402,21 @@ func TestNewOptionalListTokensPosition2(t *testing.T) {
 				EndPos:    26,
 			},
 		},
+		PositionPool: &sync.Pool{
+			New: func() interface{} { return &position.Position{} },
+		},
 	}
 
 	tpos1 := position.NewPosition(4, 4, 27, 29)
-	token1 := scanner.NewToken(`foo`, tpos1)
+	token1 := &scanner.Token{
+		Value:    `foo`,
+		Position: tpos1,
+	}
 	tpos2 := position.NewPosition(5, 5, 30, 32)
-	token2 := scanner.NewToken(`foo`, tpos2)
+	token2 := &scanner.Token{
+		Value:    `foo`,
+		Position: tpos2,
+	}
 
 	pos := builder.NewOptionalListTokensPosition([]node.Node{n2, n3}, token1, token2)
 
@@ -350,7 +426,11 @@ func TestNewOptionalListTokensPosition2(t *testing.T) {
 }
 
 func TestNilNodePos(t *testing.T) {
-	builder := parser.PositionBuilder{}
+	builder := parser.PositionBuilder{
+		PositionPool: &sync.Pool{
+			New: func() interface{} { return &position.Position{} },
+		},
+	}
 
 	pos := builder.NewNodesPosition(nil, nil)
 
@@ -371,6 +451,9 @@ func TestNilNodeListPos(t *testing.T) {
 				EndPos:    8,
 			},
 		},
+		PositionPool: &sync.Pool{
+			New: func() interface{} { return &position.Position{} },
+		},
 	}
 
 	pos := builder.NewNodeNodeListPosition(n1, nil)
@@ -382,11 +465,18 @@ func TestNilNodeListPos(t *testing.T) {
 
 func TestNilNodeListTokenPos(t *testing.T) {
 	tpos := position.NewPosition(1, 1, 0, 3)
-	token1 := scanner.NewToken(`foo`, tpos)
+	token := &scanner.Token{
+		Value:    `foo`,
+		Position: tpos,
+	}
 
-	builder := parser.PositionBuilder{}
+	builder := parser.PositionBuilder{
+		PositionPool: &sync.Pool{
+			New: func() interface{} { return &position.Position{} },
+		},
+	}
 
-	pos := builder.NewNodeListTokenPosition(nil, token1)
+	pos := builder.NewNodeListTokenPosition(nil, token)
 
 	if pos.String() != `Pos{Line: -1-1 Pos: -1-3}` {
 		t.Errorf("token value is not equal\n")
@@ -405,6 +495,9 @@ func TestEmptyNodeListPos(t *testing.T) {
 				EndPos:    8,
 			},
 		},
+		PositionPool: &sync.Pool{
+			New: func() interface{} { return &position.Position{} },
+		},
 	}
 
 	pos := builder.NewNodeNodeListPosition(n1, []node.Node{})
@@ -416,11 +509,18 @@ func TestEmptyNodeListPos(t *testing.T) {
 
 func TestEmptyNodeListTokenPos(t *testing.T) {
 	tpos := position.NewPosition(1, 1, 0, 3)
-	token1 := scanner.NewToken(`foo`, tpos)
+	token := &scanner.Token{
+		Value:    `foo`,
+		Position: tpos,
+	}
 
-	builder := parser.PositionBuilder{}
+	builder := parser.PositionBuilder{
+		PositionPool: &sync.Pool{
+			New: func() interface{} { return &position.Position{} },
+		},
+	}
 
-	pos := builder.NewNodeListTokenPosition([]node.Node{}, token1)
+	pos := builder.NewNodeListTokenPosition([]node.Node{}, token)
 
 	if pos.String() != `Pos{Line: -1-1 Pos: -1-3}` {
 		t.Errorf("token value is not equal\n")
